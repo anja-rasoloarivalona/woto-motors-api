@@ -33,9 +33,11 @@ const productSchema = new Schema({
         nbKilometers: Number,
         gazol: String,
         yearOfRelease: String,
+        transmissionType: String,
         nbOwners: Number,
         serialNumber: String,
-        generalState: String
+        generalState: String,
+        mainImgUrl: String
     
     }],
 
@@ -56,6 +58,7 @@ const productSchema = new Schema({
         type: String
     }],
 
+    albumId: String,
     imageUrls: [{
         type: String
     }]

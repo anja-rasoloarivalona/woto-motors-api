@@ -1,6 +1,22 @@
 const Product = require('../models/product');
 
 
+exports.getProducts = (req, res, next) => {
+    Product
+        .find()
+        .select('general')
+        .then(products => {
+            res
+              .status(200)
+              .json({ message: 'Fetched admin products', products: products})
+        })
+        .catch(err => {
+            console.log(err)
+        })
+}
+
+
+
 exports.addProduct = (req, res, next) => {
     console.log('adding...');
 
@@ -12,6 +28,7 @@ exports.addProduct = (req, res, next) => {
     let imageUrlsArray = imageUrlsString.split(',');
     let featuresArray = featuresString.split(',');
 
+    let mainImgUrl = imageUrlsArray[0];
 
     const product = new Product({
         general: [{
@@ -23,9 +40,11 @@ exports.addProduct = (req, res, next) => {
             nbKilometers: req.body.nbKilometers,
             gazol: req.body.gazol,
             yearOfRelease: req.body.yearOfRelease,
+            transmissionType: req.body.transmissionType,
             nbOwners: req.body.nbOwners,
             serialNumber: req.body.serialNumber,
-            generalState: req.body.generalState
+            generalState: req.body.generalState,
+            mainImgUrl: mainImgUrl
         }],
 
         tech: [{
@@ -41,6 +60,7 @@ exports.addProduct = (req, res, next) => {
         }],
 
         features: featuresArray, 
+        albumId: req.body.albumId,
         imageUrls: imageUrlsArray
     })
 
