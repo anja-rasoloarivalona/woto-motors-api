@@ -1,14 +1,38 @@
 const Product = require('../models/product');
+const mongoose = require('mongoose')
 
 
 exports.getProducts = (req, res, next) => {
     Product
         .find()
-        .select('general')
+        .select('general _id')
         .then(products => {
             res
               .status(200)
               .json({ message: 'Fetched admin products', products: products})
+        })
+        .catch(err => {
+            console.log(err)
+        })
+}
+
+
+exports.getProduct = (req, res, next ) => {   
+    const ID = mongoose.Types.ObjectId(req.params.prodId);
+    Product
+        .findById(ID)
+        .then(product => {
+            if(!product){
+                const error = new Error('Product not found');
+
+                error.statusCode = 404
+                throw error
+            }
+
+            res.status(200).json({
+                message: 'Product fetched',
+                product: product
+            })
         })
         .catch(err => {
             console.log(err)
@@ -49,7 +73,7 @@ exports.addProduct = (req, res, next) => {
 
         tech: [{
             nbGearRatios: req.body.nbGearRatios,
-            nbCylindres: req.body.nbCylinders,
+            nbCylinders: req.body.nbCylinders,
             motorSize: req.body.motorSize,
             maxSpeed: req.body.maxSpeed,
         }],
