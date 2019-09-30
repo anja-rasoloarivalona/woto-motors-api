@@ -67,7 +67,9 @@ exports.addProduct = (req, res, next) => {
             nbOwners: req.body.nbOwners,
             serialNumber: req.body.serialNumber,
             generalState: req.body.generalState,
-            mainImgUrl: mainImgUrl
+            mainImgUrl: mainImgUrl,
+            publicity: req.body.publicity,
+            homePage: req.body.homePage
         }],
 
         tech: [{
@@ -80,6 +82,10 @@ exports.addProduct = (req, res, next) => {
         design: [{
             intColor: req.body.intColor,
             extColor: req.body.extColor
+        }],
+
+        stats: [{
+            viewCounter: 0
         }],
 
         features: featuresArray, 
@@ -116,7 +122,7 @@ exports.updateProduct = (req, res, next) => {
     let imageUrlsArray = imageUrlsString.split(',');
     let featuresArray = featuresString.split(',');
 
-   
+    let mainImgUrl = imageUrlsArray[0];
 
     Product.findById(ID)
         .then(product => {
@@ -137,9 +143,11 @@ exports.updateProduct = (req, res, next) => {
             product.general[0].transmissionType = req.body.transmissionType;
             product.general[0].nbOwners = req.body.nbOwners;
             product.general[0].serialNumber = req.body.serialNumber;
-            product.general[0].general = req.body.generalState;
+            product.general[0].generalState = req.body.generalState;
+            product.general[0].publicity = req.body.publicity;
+            product.general[0].homePage = req.body.homePage;
 
-           // product.general[0].mainImgUrl = req.body.mainImgUrl
+            product.general[0].mainImgUrl = mainImgUrl;
 
 
            product.tech[0].nbGearRatios = req.body.nbGearRatios;

@@ -10,6 +10,7 @@ const app = express();
 
 /*---------ROUTES-------*/
 const adminRoutes = require('./routes/admin');
+const authRoutes = require('./routes/auth');
 
 app.use(helmet());
 
@@ -32,7 +33,7 @@ app.use((req, res, next) => {
  
 
 app.use('/admin', adminRoutes);
-
+app.use('/auth', authRoutes)
 
 
 

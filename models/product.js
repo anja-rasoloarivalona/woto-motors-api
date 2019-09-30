@@ -37,7 +37,9 @@ const productSchema = new Schema({
         nbOwners: Number,
         serialNumber: String,
         generalState: String,
-        mainImgUrl: String
+        mainImgUrl: String,
+        publicity: String,
+        homePage: String
     
     }],
 
@@ -61,6 +63,10 @@ const productSchema = new Schema({
     albumId: String,
     imageUrls: [{
         type: String
+    }],
+
+    stats: [{
+        viewCounter: Number
     }]
 
    
