@@ -60,6 +60,10 @@ exports.signup = (req, res, next) => {
 
 
 exports.login = (req, res, next ) => {
+
+    console.log('body', req.body);
+
+
     const email = req.body.email;
     const password = req.body.password;
 
@@ -94,7 +98,7 @@ exports.login = (req, res, next ) => {
                 { expiresIn: '24h'}
                 );
 
-                res.statusCode(200).json({
+                res.status(200).json({
                     token: token,
                     userId: userAskingLogin._id.toString()
                 })
