@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose')
 
 
 const { validationResult } = require('express-validator');
@@ -66,6 +67,7 @@ exports.login = (req, res, next ) => {
 
     const email = req.body.email;
     const password = req.body.password;
+    const timeStamp = req.body.timeStamp;
 
 
     let userAskingLogin;
@@ -89,6 +91,12 @@ exports.login = (req, res, next ) => {
                 error.statusCode = 401;
                 throw error
             }
+
+            userAskingLogin.lastConnection = timeStamp
+
+            return userAskingLogin.save()
+        })
+        .then( result => {
 
             const token = jwt.sign({
                 email: userAskingLogin.email,
@@ -114,4 +122,36 @@ exports.login = (req, res, next ) => {
 
 
             
+}
+
+
+exports.updateLastConnection = (req, res, next ) => {
+
+    console.log('body', req.body);
+
+    const userId= mongoose.Types.ObjectId(req.body.userId);
+    const timeStamp = req.body.timeStamp;
+
+    User.findById(userId)
+        .then( user => {
+            if(!user){
+                const error = new Error('No user found');
+                error.statusCode = 401;
+                throw error
+            }
+
+            user.lastConnection = timeStamp
+            return user.save()
+        })
+        .then( result => {
+            res.status(200).json({
+                message: 'last connection updated'
+            })
+        })
+        .catch( err => {
+            if(!err.statusCode){
+                err.statusCode = 500
+            }
+            console.log(err)
+        })            
 }

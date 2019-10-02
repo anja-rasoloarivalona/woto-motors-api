@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 
-const userSchema = new Schema({
+const adminSchema = new Schema({
     email: {
         type: String,
         require: true
@@ -12,10 +12,10 @@ const userSchema = new Schema({
 
     password: {
         type: String,
-        require: true
+        require: true,
     },
 
-    firstName : {
+    firstName: {
         type: String,
         require: true
     },
@@ -25,16 +25,12 @@ const userSchema = new Schema({
         require: true
     },
 
-    lastConnection: {
-        type: String
-    },
 
-    phoneNumber: {
-        type: String
+    superAdmin: {
+        type: Boolean,
+        require: true
     }
+})
 
 
-}, {timestamps: true})
-
-
-module.exports = mongoose.model('User', userSchema)
+module.exports = mongoose.model('Admin', adminSchema)

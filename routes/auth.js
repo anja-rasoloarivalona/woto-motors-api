@@ -45,6 +45,8 @@ router.put('/signup',
 
 
 router.post('/login', authController.login)
+
+router.post('/updateLastConnection', authController.updateLastConnection)
     
 
 module.exports = router;

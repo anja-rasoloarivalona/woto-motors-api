@@ -1,5 +1,11 @@
 const Product = require('../models/product');
-const mongoose = require('mongoose')
+const Admin = require('../models/admin');
+
+const mongoose = require('mongoose');
+
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const { validationResult } = require('express-validator')
 
 
 exports.getProducts = (req, res, next) => {
@@ -183,4 +189,103 @@ exports.updateProduct = (req, res, next) => {
 
         
 
+}
+
+
+
+
+exports.adminSignup = (req, res, next) => {
+    const errors = validationResult(req);
+
+    if(!errors.isEmpty()){
+        console.log('error', errors);
+
+        const error = new Error('Validation failed');
+        error.statusCode = 422;
+        error.data = errors.array();
+        throw error
+    }
+
+
+    const email = req.body.email;
+    const firstName = req.body.firstName;
+    const lastName = req.body.lastName;
+    const password = req.body.password;
+
+    const superAdmin = true;
+
+    bcrypt.hash( password, 12)
+          .then(encryptedPassword => {
+
+              const admin = new Admin({
+                  email: email,
+                  firstName: firstName,
+                  lastName: lastName,
+                  password: encryptedPassword,
+                  superAdmin: superAdmin
+              })
+
+              return admin.save()
+          })
+          .then( result => {
+              res.status(201)
+              .json({ message: 'Admin created',
+                     adminId: result._id})
+          })
+          .catch( err => {
+              if(!err.statusCode){
+                  err.statusCode = 500
+              }
+
+              console.log(err)
+          })
+}
+
+exports.adminLogin = (req, res, next) => {
+
+    const email = req.body.email;
+    const password = req.body.password;
+
+
+    let adminAskingLogin;
+
+    Admin.findOne({ email: email})
+        .then( admin => {
+            if(!admin){
+                const error = new Error('An admin with this email could not be found');
+                error.statusCode = 401;
+                throw error
+            }
+
+            adminAskingLogin = admin;
+
+            return bcrypt.compare(password, admin.password)
+        })
+        .then(isEqual => {
+            if(!isEqual){
+                const error = new Error('wrong password')
+                error.statusCode = 401;
+                throw error
+            }
+
+            const token = jwt.sign({
+                email: adminAskingLogin.email,
+                adminId: adminAskingLogin._id.toString()
+            },
+            'PkItj7221YGJbcsaYIL90!lmfds?mPdlf21l32nfe9',
+            { expiresIn: '1h'});
+
+            res.status(200).json({
+                token: token,
+                adminId: adminAskingLogin._id.toString(),
+                adminName: `${adminAskingLogin.firstName} ${adminAskingLogin.lastName}`
+            })
+        })
+        .catch( err => {
+            if(!err.statusCode){
+                err.statusCode = 500
+            }
+
+            console.log(err)
+        })
 }
