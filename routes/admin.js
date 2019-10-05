@@ -11,6 +11,8 @@ const Admin = require('../models/admin');
 
 router.get('/products', adminController.getProducts);
 
+router.get('/users', adminController.getUsers);
+
 router.get('/:prodId', adminController.getProduct)
 
 router.post('/add-product', adminController.addProduct);

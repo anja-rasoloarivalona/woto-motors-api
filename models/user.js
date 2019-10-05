@@ -31,7 +31,19 @@ const userSchema = new Schema({
 
     phoneNumber: {
         type: String
-    }
+    },
+
+    messages: [
+        {
+          from: String,
+          message: String,
+          timeStamp: String,
+          senderType: String,
+          read: Boolean,
+          readBy: String,
+          readByTimeStamp: String
+        }
+    ]
 
 
 }, {timestamps: true})

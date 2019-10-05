@@ -1,6 +1,6 @@
 const Product = require('../models/product');
 const Admin = require('../models/admin');
-
+const User = require('../models/user');
 const mongoose = require('mongoose');
 
 const bcrypt = require('bcryptjs');
@@ -273,7 +273,7 @@ exports.adminLogin = (req, res, next) => {
                 adminId: adminAskingLogin._id.toString()
             },
             'PkItj7221YGJbcsaYIL90!lmfds?mPdlf21l32nfe9',
-            { expiresIn: '1h'});
+            { expiresIn: '24h'});
 
             res.status(200).json({
                 token: token,
@@ -288,4 +288,17 @@ exports.adminLogin = (req, res, next) => {
 
             console.log(err)
         })
+}
+
+exports.getUsers = (req, res, next ) => {
+    User
+    .find()
+    .then(users => {
+        res
+          .status(200)
+          .json({ message: 'Fetched users', users: users})
+    })
+    .catch(err => {
+        console.log(err)
+    })
 }

@@ -127,7 +127,7 @@ exports.login = (req, res, next ) => {
 
 exports.updateLastConnection = (req, res, next ) => {
 
-    console.log('body', req.body);
+
 
     const userId= mongoose.Types.ObjectId(req.body.userId);
     const timeStamp = req.body.timeStamp;

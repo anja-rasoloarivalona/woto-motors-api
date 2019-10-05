@@ -1,19 +1,16 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const app = express();
-
-const http = require('http').Server(app);
 const mongoose = require('mongoose');
 const helmet = require('helmet');
 
+const app = express();
 
-const io = require('socket.io')
-const socket = io(http)
 
 /*---------ROUTES-------*/
 const adminRoutes = require('./routes/admin');
 const authRoutes = require('./routes/auth');
+const messageRoutes = require('./routes/messages');
 
 app.use(helmet());
 
@@ -33,26 +30,24 @@ app.use((req, res, next) => {
 });
   
 
- 
-
 app.use('/admin', adminRoutes);
 app.use('/auth', authRoutes);
+app.use('/messages', messageRoutes)
 
 
-let Message = mongoose.model('Message', { name: String, message: String});
 
-
+/*
 app.get('/messages', (req, res) => {
     Message.find({},(err, messages)=> {
       res.send(messages);
     })
 })
+*/
+/*
 
 app.post('/messages', (req, res) => {
 
     console.log(req.body);
-
-
     var message = new Message(req.body);
     message.save((err) =>{
       if(err)
@@ -61,10 +56,9 @@ app.post('/messages', (req, res) => {
       res.sendStatus(200)
     })
 })
+*/
 
-socket.on('connection', () => {
-    console.log('a user is connected')
-})
+
 
 
 
@@ -73,8 +67,15 @@ mongoose
     .connect(`mongodb+srv://anja:anjanirina@cluster0-wijrw.mongodb.net/africauto`, { useNewUrlParser: true, useUnifiedTopology: true } )
 
     .then(result =>{ 
-        console.log('still working')
-        http.listen(process.env.PORT || 8000)
+
+        const server = app.listen(process.env.PORT || 8000);
+        const io = require('./socket').init(server);
+
+        io.on('connection', socket => {
+          console.log('client connected')
+        })
+
+
 
     })
     .catch(err => 
