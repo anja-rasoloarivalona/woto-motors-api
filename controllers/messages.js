@@ -100,6 +100,44 @@ exports.getMessagesUserAsUser = (req, res, next) => {
        })
 }
 
+exports.getMessagesUserAsUserAndUpdate = (req, res, next) => {
+
+    const userId = mongoose.Types.ObjectId(req.params.userId);
+
+    let timeStamp = req.body.timeStamp;
+    let userName = req.body.userName;
+
+    User.findById(userId)
+        .select('firstName lastName messages')
+       .then( user => {
+            if(!user){
+                const error = new Error('No user found')
+                error.statusCode = 404
+                throw error
+            }
+
+            user.messages.forEach(i => {
+                if(i.read === false){
+                    i.read = true;
+                    i.readByTimeStamp = timeStamp;
+                    i.readBy = userName
+                }
+            })
+            return user.save();
+
+       })
+       .then(result => {
+
+        io.getIO().emit('userReadNewMessages', result)
+
+
+            res.status(200)
+            .json({
+                info: 'Messages fetched',
+                messages: result
+            })
+       })
+}
 
 
 // USER SEND MESSAGES

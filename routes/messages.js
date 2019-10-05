@@ -17,7 +17,7 @@ router.post('/admin-update/:userId', messageController.getMessagesUserAsAdmin)
 
 
 
-
+router.post('/:userId', messageController.getMessagesUserAsUserAndUpdate)
 
 router.post('/user/:userId', messageController.postMessagesUser)
 
