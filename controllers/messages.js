@@ -44,10 +44,10 @@ exports.getMessagesUserAsAdmin = (req, res, next) => {
     let adminName = req.body.adminName;
     let timeStamp = req.body.timeStamp;
 
-    console.log('fetching messages as admin',req.body)
+  
 
     User.findById(userId)
-        .select('firstName lastName messages')
+        .select('firstName lastName messages notification')
        .then( user => {
             if(!user){
                 const error = new Error('No user found')
@@ -67,6 +67,10 @@ exports.getMessagesUserAsAdmin = (req, res, next) => {
                     i.readByTimeStamp = timeStamp;      
                 }
             })
+
+            if(user.notification === true){
+                user.notification = false
+            }
 
             return user.save()
        })
@@ -181,7 +185,7 @@ exports.postMessagesUser = (req, res, next) => {
         .then( result => {
      
             let lastPosition = result.messages.length - 1;
-            console.log(messagesData);
+           
 
             io.getIO().emit('userSentMessage', {
                 messageData: {

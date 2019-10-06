@@ -43,7 +43,11 @@ const userSchema = new Schema({
           readBy: String,
           readByTimeStamp: String
         }
-    ]
+    ],
+
+    notification: {
+        type: Boolean
+    }
 
 
 }, {timestamps: true})
