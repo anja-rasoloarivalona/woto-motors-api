@@ -90,6 +90,8 @@ mongoose
                  socket.on('disconnect', () => {
                     
                      let userEndingConnection
+
+                     
      
                     User.findById(userId)
                          .then( user => {
@@ -115,6 +117,7 @@ mongoose
                              return userEndingConnection.save()
                          })
                          .then(result => {
+                            io.emit('userLoggedOut', result);
                              console.log('disconnected')
                          })
                          .catch(err => {

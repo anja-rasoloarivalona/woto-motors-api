@@ -168,6 +168,8 @@ exports.startConnection = (req, res, next ) => {
             return user.save()
         })
         .then( result => {
+            
+            io.getIO().emit('userLoggedIn', result);
 
             let lastPosition = result.connection.length - 1;
 
@@ -227,6 +229,9 @@ exports.endConnection = (req, res, next ) => {
         .then( result => {
 
             console.log(result)
+
+            io.getIO().emit('userLoggedOut', result);
+
 
             res.status(200).json({
                 message: 'last connection updated',
