@@ -293,6 +293,8 @@ exports.adminLogin = (req, res, next) => {
 exports.getUsers = (req, res, next ) => {
     User
     .find()
+    .select('email firstName lastName _id active')
+    .slice('connection', -1)
     .then(users => {
         res
           .status(200)

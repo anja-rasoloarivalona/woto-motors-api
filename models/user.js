@@ -25,9 +25,10 @@ const userSchema = new Schema({
         require: true
     },
 
-    lastConnection: {
-        type: String
-    },
+    connection: [{
+        start: String,
+        end: String
+    }],
 
     phoneNumber: {
         type: String
@@ -45,9 +46,8 @@ const userSchema = new Schema({
         }
     ],
 
-    notification: {
-        type: Boolean
-    }
+    notification: Boolean,
+    active: Boolean
 
 
 }, {timestamps: true})

@@ -43,10 +43,11 @@ router.put('/signup',
       authController.signup)
 
 
+router.post('/end-connection', authController.endConnection)
 
 router.post('/login', authController.login)
 
-router.post('/updateLastConnection', authController.updateLastConnection)
+router.post('/start-connection', authController.startConnection)
     
 
 module.exports = router;
