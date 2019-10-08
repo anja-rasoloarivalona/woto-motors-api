@@ -16,6 +16,8 @@ const adminRoutes = require('./routes/admin');
 const authRoutes = require('./routes/auth');
 const messageRoutes = require('./routes/messages');
 const statsRoutes = require('./routes/stat');
+const userRoutes = require('./routes/user');
+
 
 app.use(helmet());
 
@@ -38,7 +40,8 @@ app.use((req, res, next) => {
 app.use('/admin', adminRoutes);
 app.use('/auth', authRoutes);
 app.use('/messages', messageRoutes);
-app.use('/stats', statsRoutes)
+app.use('/stats', statsRoutes);
+app.use('/user', userRoutes)
 
 
 
