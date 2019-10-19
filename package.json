@@ -7,7 +7,8 @@
   },
   "main": "app.js",
   "scripts": {
-    "start": "nodemon app.js"
+    "start": "NODE_ENV=production MONGO_USER=anja MONGO_PASSWORD=anjanirina node app.js",
+    "start:dev": "nodemon app.js"
   },
   "author": "Anja R.",
   "license": "ISC",
