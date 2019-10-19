@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const helmet = require('helmet');
+const compression = require('compression')
 
 const app = express();
 
@@ -21,6 +22,7 @@ const productsRoutes = require('./routes/products')
 
 
 app.use(helmet());
+app.user(compression())
 
 app.use('*', cors());
 
@@ -49,12 +51,14 @@ app.use('/products', productsRoutes)
 
 
 mongoose
-//    .connect(`mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0-wijrw.mongodb.net/shop`)
-    .connect(`mongodb+srv://anja:anjanirina@cluster0-wijrw.mongodb.net/africauto`, { useNewUrlParser: true, useUnifiedTopology: true } )
+   .connect(`mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0-wijrw.mongodb.net/africauto`, { useNewUrlParser: true, useUnifiedTopology: true } )
+ //   .connect(`mongodb+srv://anja:anjanirina@cluster0-wijrw.mongodb.net/africauto`, { useNewUrlParser: true, useUnifiedTopology: true } )
 
     .then(result =>{ 
 
-        const server = app.listen(process.env.PORT || '192.168.2.19:8000');
+        console.log('connected to database');
+
+        const server = app.listen(process.env.PORT || 8000);
         const io = require('./socket').init(server);
 
       /*  io.on('connection', socket => {
