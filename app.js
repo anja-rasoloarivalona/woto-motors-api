@@ -17,6 +17,7 @@ const authRoutes = require('./routes/auth');
 const messageRoutes = require('./routes/messages');
 const statsRoutes = require('./routes/stat');
 const userRoutes = require('./routes/user');
+const productsRoutes = require('./routes/products')
 
 
 app.use(helmet());
@@ -41,7 +42,8 @@ app.use('/admin', adminRoutes);
 app.use('/auth', authRoutes);
 app.use('/messages', messageRoutes);
 app.use('/stats', statsRoutes);
-app.use('/user', userRoutes)
+app.use('/user', userRoutes);
+app.use('/products', productsRoutes)
 
 
 
@@ -52,7 +54,7 @@ mongoose
 
     .then(result =>{ 
 
-        const server = app.listen(process.env.PORT || 8000);
+        const server = app.listen(process.env.PORT || '192.168.2.19:8000');
         const io = require('./socket').init(server);
 
       /*  io.on('connection', socket => {
@@ -131,11 +133,6 @@ mongoose
             }
             next()
         })
-
-        
-
-
-
     })
     .catch(err => 
         console.log(err)

@@ -34,3 +34,25 @@ exports.getHomeProducts = (req, res, next) => {
         console.log(err)
     })
 } 
+
+exports.getProduct = (req, res, next ) => {   
+    const id= mongoose.Types.ObjectId(req.params.prodId);
+    Product
+        .findById(id)
+        .then(product => {
+            if(!product){
+                const error = new Error('Product not found');
+
+                error.statusCode = 404
+                throw error
+            }
+
+            res.status(200).json({
+                message: 'Product fetched',
+                product: product
+            })
+        })
+        .catch(err => {
+            console.log(err)
+        })
+}
