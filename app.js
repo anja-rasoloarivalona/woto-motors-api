@@ -22,7 +22,7 @@ const productsRoutes = require('./routes/products')
 
 
 app.use(helmet());
-app.user(compression())
+app.use(compression())
 
 app.use('*', cors());
 
