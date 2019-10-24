@@ -201,9 +201,14 @@ exports.postMessagesUser = (req, res, next) => {
                 }
             })
 
+            let messageResponse = {
+                ...messagesData,
+                _id: result.messages[lastPosition]._id
+            }
+
             res.status(201).json({
                 info: 'Message Sent successfully',
-                data: messagesData
+                data: messageResponse
             })
         })
         .catch( err => {
