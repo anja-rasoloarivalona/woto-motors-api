@@ -74,5 +74,10 @@ const productSchema = new Schema({
 }, {timestamps: true})
 
 
+/*productSchema.methods.getName = () => {
+
+}*/
+
+
 
 module.exports = mongoose.model('Product', productSchema)
