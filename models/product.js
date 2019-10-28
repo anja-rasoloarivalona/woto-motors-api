@@ -65,8 +65,9 @@ const productSchema = new Schema({
         type: String
     }],
 
-    stats: [{
-        viewCounter: Number
+    views: [{
+        userId: String,
+        timeStamp: String
     }]
 
    

@@ -47,7 +47,12 @@ const userSchema = new Schema({
     ],
 
     notification: Boolean,
-    active: Boolean
+    active: Boolean,
+
+    views: [{
+        productId: String,
+        timeStamp: String
+    }]
 
 
 }, {timestamps: true})

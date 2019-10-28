@@ -45,7 +45,7 @@ app.use('/auth', authRoutes);
 app.use('/messages', messageRoutes);
 app.use('/stats', statsRoutes);
 app.use('/user', userRoutes);
-app.use('/products', productsRoutes)
+app.use('/product', productsRoutes)
 
 
 
