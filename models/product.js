@@ -39,7 +39,8 @@ const productSchema = new Schema({
         generalState: String,
         mainImgUrl: String,
         publicity: String,
-        homePage: String
+        homePage: String,
+        viewCounter: Number
     
     }],
 
@@ -64,6 +65,8 @@ const productSchema = new Schema({
     imageUrls: [{
         type: String
     }],
+
+
 
     views: [{
         userId: String,

@@ -1,5 +1,7 @@
 const Product = require('../models/product');
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
+const User = require('../models/user')
+const timeStampGenerator = require('../utilities/timeStampGenerator')
 
 exports.initAppDatas = (req, res, next) => {
     
@@ -12,8 +14,6 @@ exports.initAppDatas = (req, res, next) => {
       .find()
       .select('general')
       .then(products => {
-
-        console.log('products', products)
 
         products.forEach(product => {
 
@@ -108,9 +108,32 @@ exports.initAppDatas = (req, res, next) => {
 }
 
 exports.getProducts = (req, res, next ) => {
+
+    const { sortBy } = req.query;
+
+    let sort;
+
+    if(sortBy === 'undefined' ||sortBy === 'prix croissant' ){
+        sort = {"general.price": 1};
+    }
+
+    if(sortBy === 'prix décroissant'){
+        sort = {"general.price": -1};
+    }
+
+    if(sortBy === 'popularité'){
+        sort = {"general.viewCounter": -1};
+    }
+
+    if(sortBy === 'date'){
+        sort = {createdAt: -1};
+    }
+
+
     Product
         .find()
         .select('general _id')
+        .sort(sort)
         .then(products => {
             res
                 .status(200)
@@ -125,7 +148,15 @@ exports.getProduct = (req, res, next) => {
     let madeRequested = 'Toyota'
     let modelRequested = 'Elantra'
     let priceRequested = 2000
-    const {made, model, price, } = req.query;
+    const {made, model, price, userId} = req.query;
+
+    let userIdMakingRequest = userId;
+    let productsResponse;
+    let timestamp = timeStampGenerator()
+
+    if(userId !== 'not connected') {
+        userIdMakingRequest = mongoose.Types.ObjectId(userId)
+    }
 
     if(made !== 'null'){
         madeRequested = made
@@ -146,14 +177,67 @@ exports.getProduct = (req, res, next) => {
                 error.statusCode = 404
                 throw error
             }
-            let requestedProduct = products.find(product => product._id.toString() === prodId.toString())
-            let relatedProducts = products.filter(product => product._id.toString() !== prodId.toString())
+
+            productsResponse = products;
+
+            
+
+            products.forEach(product => {
+
+              if(product._id.toString() === prodId.toString()){
+                  let viewCounter = product.general[0].viewCounter;
+                  if(viewCounter === undefined){
+                     product.general[0].viewCounter = 1
+                  } else {
+                    product.general[0].viewCounter = product.general[0].viewCounter + 1
+                  }
+
+                  product.views = [...product.views, {
+                      userId: userIdMakingRequest,
+                      timeStamp: timestamp
+                  }]
+
+                  return product.save()
+                }
+            })
+        })
+        .then(() =>{
+
+            let requestedProduct = productsResponse.find(product => product._id.toString() === prodId.toString())
+            let relatedProducts = productsResponse.filter(product => product._id.toString() !== prodId.toString())
 
             res.status(200).json({
                 message: 'Product fetched',
                 product: requestedProduct,
                 relatedProducts: relatedProducts
             })
+
+            if(userId !== 'not connected'){
+                addingViewsToUser(userIdMakingRequest, prodId, timestamp);
+            }
+
+            
+            console.log('res send')
+
+           
+
+        })           
+        .catch(err => {
+            console.log(err)
+        })
+}
+
+
+const addingViewsToUser = (userId, prodId, timeStamp) => {
+    User.findById(userId)
+        .then(user => {
+
+            user.views = [...user.views, {
+                productId: prodId,
+                timeStamp: timeStamp
+            }]
+
+            return user.save()
         })
         .catch(err => {
             console.log(err)
