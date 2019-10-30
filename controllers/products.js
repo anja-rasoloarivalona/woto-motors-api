@@ -7,13 +7,18 @@ exports.initAppDatas = (req, res, next) => {
     
     let publicityProducts = [];
     let homeInventoryProducts = [];
+    let mostPopularProducts = [];
+
     let madeAndModelsData = {};
     let keys = []
 
     Product
       .find()
       .select('general')
+      .sort({'general.viewCounter': -1})
       .then(products => {
+
+        mostPopularProducts = products.slice(0, 4)
 
         products.forEach(product => {
 
@@ -99,7 +104,8 @@ exports.initAppDatas = (req, res, next) => {
             .json({ message: 'Fetched user products', 
                 publicityProducts: publicityProducts,
                 homeInventoryProducts: homeInventoryProducts,
-                madeAndModelsData: madeAndModelsData})
+                madeAndModelsData: madeAndModelsData,
+                mostPopularProducts: mostPopularProducts})
         })
         .catch(err => {
             console.log(err)
@@ -132,7 +138,7 @@ exports.getProducts = (req, res, next ) => {
 
     Product
         .find()
-        .select('general _id')
+        .select('general _id createdAt')
         .sort(sort)
         .then(products => {
             res
