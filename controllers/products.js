@@ -114,6 +114,64 @@ exports.initAppDatas = (req, res, next) => {
 }
 
 exports.getProducts = (req, res, next ) => {
+    let madeQueries = [],
+        priceQueries,
+        yearQueries
+
+    if(req.query.price === 'undefined'){
+        priceQueries = {"general.price" : { $ne: null}}
+    } else {
+        let minPrice = req.query.price.split(':')[0]
+        let maxPrice = req.query.price.split(':')[1];
+        priceQueries={ "general.price" : { $gte: minPrice, $lte: maxPrice} }
+    }
+
+
+    if(req.query.year === 'undefined'){
+        yearQueries = {"general.year" : { $ne: null}}
+    } else {
+        let minYear = req.query.year.split(':')[0]
+        let maxYear = req.query.year.split(':')[1];
+        yearQueries ={ "general.year" : { $gte: minYear, $lte: maxYear} }
+    }
+
+    
+
+    let mades
+    let datas = {};
+
+    if(req.query.made === 'undefined' || req.query.made === 'all'){
+        madeQueries = [{ "general.made" : { $ne: null}}]
+    } else {
+        mades = req.query.made.split('_');
+
+        mades.forEach( i => {
+            if(i !== ''){        
+                let made = i.split(':')[0]
+                let madeData = i.split(':')[1].split(',')
+    
+                datas[made] = madeData
+            }
+        })
+
+        Object.keys(datas).map( made => {
+            datas[made].forEach(model => {
+                let sort; 
+                if(model !== 'all'){
+                    sort = {
+                        "general.made": made,
+                        "general.model": model
+                    }
+                } else {
+                    sort = {
+                        "general.made": made,
+                    }
+                }
+                madeQueries = [...madeQueries, sort]
+            })
+            
+        })
+    }
 
     const { sortBy } = req.query;
 
@@ -137,7 +195,13 @@ exports.getProducts = (req, res, next ) => {
 
 
     Product
-        .find()
+        .find({ 
+            $and: [
+               {$or: madeQueries},
+                priceQueries,
+                yearQueries
+            ]
+        })
         .select('general _id createdAt')
         .sort(sort)
         .then(products => {
