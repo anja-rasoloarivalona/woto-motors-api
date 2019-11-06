@@ -71,6 +71,10 @@ const productSchema = new Schema({
     views: [{
         userId: String,
         timeStamp: String
+    }],
+
+    followers: [{
+        type: String
     }]
 
    

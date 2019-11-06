@@ -52,6 +52,10 @@ const userSchema = new Schema({
     views: [{
         productId: String,
         timeStamp: String
+    }],
+
+    favorites: [{
+        type: String
     }]
 
 

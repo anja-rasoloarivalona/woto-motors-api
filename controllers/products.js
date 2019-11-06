@@ -118,16 +118,20 @@ exports.getProducts = (req, res, next ) => {
         priceQueries,
         yearQueries
 
-    if(req.query.price === 'undefined'){
+        console.log('req', req.query.price === undefined);
+
+    if(req.query.price === 'undefined' || req.query.price === undefined){
         priceQueries = {"general.price" : { $ne: null}}
     } else {
+        console.log('req passed', req.query.price);
+
         let minPrice = req.query.price.split(':')[0]
         let maxPrice = req.query.price.split(':')[1];
         priceQueries={ "general.price" : { $gte: minPrice, $lte: maxPrice} }
     }
 
 
-    if(req.query.year === 'undefined'){
+    if(req.query.year === 'undefined' || req.query.year === undefined){
         yearQueries = {"general.year" : { $ne: null}}
     } else {
         let minYear = req.query.year.split(':')[0]
@@ -140,7 +144,7 @@ exports.getProducts = (req, res, next ) => {
     let mades
     let datas = {};
 
-    if(req.query.made === 'undefined' || req.query.made === 'all'){
+    if(req.query.made === 'undefined' || req.query.made === undefined || req.query.made === 'all'){
         madeQueries = [{ "general.made" : { $ne: null}}]
     } else {
         mades = req.query.made.split('_');
@@ -222,7 +226,12 @@ exports.getProduct = (req, res, next) => {
 
     let userIdMakingRequest = userId;
     let productsResponse;
-    let timestamp = timeStampGenerator()
+    let timestamp = timeStampGenerator();
+
+
+    let requestedProduct, relatedProducts;
+
+
 
     if(userId !== 'not connected') {
         userIdMakingRequest = mongoose.Types.ObjectId(userId)
@@ -239,6 +248,7 @@ exports.getProduct = (req, res, next) => {
     } 
 
     const prodId = mongoose.Types.ObjectId(req.params.prodId);
+
     Product
         .find({   $or: [{_id: prodId}, {'general.made' : madeRequested}] })
         .then(products => {       
@@ -248,10 +258,7 @@ exports.getProduct = (req, res, next) => {
                 throw error
             }
 
-            productsResponse = products;
-
-            
-
+            productsResponse = products;            
             products.forEach(product => {
 
               if(product._id.toString() === prodId.toString()){
@@ -271,25 +278,30 @@ exports.getProduct = (req, res, next) => {
                 }
             })
         })
-        .then(() =>{
+        .then( () => {  
 
-            let requestedProduct = productsResponse.find(product => product._id.toString() === prodId.toString())
-            let relatedProducts = productsResponse.filter(product => product._id.toString() !== prodId.toString())
+   
+            
+            let favorite = false;
+
+           requestedProduct = productsResponse.find(product => product._id.toString() === prodId.toString())
+           relatedProducts = productsResponse.filter(product => product._id.toString() !== prodId.toString())
+
+           if(userId!== 'not connected' && requestedProduct.followers.includes(userId)){
+            favorite = true
+            }
+
 
             res.status(200).json({
                 message: 'Product fetched',
                 product: requestedProduct,
-                relatedProducts: relatedProducts
+                relatedProducts: relatedProducts,
+                favorite: favorite
             })
 
             if(userId !== 'not connected'){
                 addingViewsToUser(userIdMakingRequest, prodId, timestamp);
-            }
-
-            
-            console.log('res send')
-
-           
+            }           
 
         })           
         .catch(err => {
