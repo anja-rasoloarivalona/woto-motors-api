@@ -87,14 +87,11 @@ mongoose
             var data = socket.request._query.data;
 
             if(data){
-                console.log('data', data);
+  
 
                 let userId = mongoose.Types.ObjectId(data.split(' ')[0]);
                 let connectionId = mongoose.Types.ObjectId(data.split(' ')[1]);
                 
-     
-                console.log('connected', connectionId)
-     
                  socket.on('disconnect', () => {
                     
                      let userEndingConnection
@@ -126,7 +123,6 @@ mongoose
                          })
                          .then(result => {
                             io.emit('userLoggedOut', result);
-                             console.log('disconnected')
                          })
                          .catch(err => {
                              console.log(err)

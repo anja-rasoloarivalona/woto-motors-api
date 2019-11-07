@@ -47,6 +47,53 @@ exports.removeFavorite = async (req, res, next) => {
     })
 }
 
+exports.getFavoriteProducts = (req, res, next) => {
+    let userId =  mongoose.Types.ObjectId(req.params.userId) 
+
+    User.findById(userId)
+        .select('favorites')
+        .then(favorites => {
+
+            if(!favorites){
+                const error = new Error('Favorites products not found');
+                error.statusCode = 404
+                throw error
+            }
+
+            let favoriteProductsIds = [];
+
+            favorites.favorites.forEach( i => {
+                favoriteProductsIds.push(mongoose.Types.ObjectId(i))
+            })
+
+            return Product
+                    .find({
+                        '_id': { $in: favoriteProductsIds}
+                    })
+                    .select('general')
+
+        })
+        .then(products => {
+            if(!products){
+                const error = new Error('Favorites products not found');
+                error.statusCode = 404
+                throw error
+            }
+
+            console.log('kk', products)
+
+            res.status(200).json({
+                favorites: products,
+                message: 'fetched favorite products'
+            })
+        })
+        .catch(err => {
+            console.log(err)
+        })
+
+}
+
+
 const toggleFollowerToProduct = (productId, userId, action) => {
     Product
     .findById(productId)
