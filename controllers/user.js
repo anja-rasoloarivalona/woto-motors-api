@@ -80,7 +80,6 @@ exports.getFavoriteProducts = (req, res, next) => {
                 throw error
             }
 
-            console.log('kk', products)
 
             res.status(200).json({
                 favorites: products,

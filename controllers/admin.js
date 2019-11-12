@@ -304,3 +304,77 @@ exports.getUsers = (req, res, next ) => {
         console.log(err)
     })
 }
+
+exports.getUser = (req, res, next) => {
+
+    let userData;
+
+
+    let userFavoriteProductsIds = [];
+    let userViewedProductsIds = [];
+
+    let userProductsData = [];
+
+    let userFavoriteProducts = [];
+    let userViewedProducts = []
+
+   let userId =  mongoose.Types.ObjectId(req.params.userId)
+    User
+     .findById(userId)
+     .select('-password')
+     .then(user => {
+        if(!user){
+            const error = new Error('User not found');
+            error.statusCode = 404
+            throw error
+        }
+
+        userData = user;
+
+        user.favorites.forEach( id => {
+            userFavoriteProductsIds.push(id.toString())
+            userProductsData.push(mongoose.Types.ObjectId(id))
+        })
+
+        user.views.forEach(view => {
+            userViewedProductsIds.push(view.productId.toString())
+            userProductsData.push(mongoose.Types.ObjectId(view.productId))
+             
+        })
+
+
+        return Product.find({
+            '_id': { $in: userProductsData}
+        })
+       
+     })
+     .then(products => {
+        if(!products){
+            const error = new Error('User favorite products not found');
+            error.statusCode = 404
+            throw error
+        }
+
+        products.forEach(product => {
+            if(userFavoriteProductsIds.includes(product._id.toString())){
+                userFavoriteProducts.push(product)
+            }
+
+            if(userViewedProductsIds.includes(product._id.toString())){
+                userViewedProducts.push(product)
+            }
+        })
+
+        res
+        .status(200)
+        .json({
+            message: 'User account details fetched',
+            user: userData,
+            favorites: userFavoriteProducts,
+            viewedProducts: userViewedProducts
+        })      
+     })
+     .catch(err => {
+        console.log(err)
+    })
+}

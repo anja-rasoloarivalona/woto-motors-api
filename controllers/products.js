@@ -314,10 +314,41 @@ const addingViewsToUser = (userId, prodId, timeStamp) => {
     User.findById(userId)
         .then(user => {
 
-            user.views = [...user.views, {
-                productId: prodId,
-                timeStamp: timeStamp
-            }]
+            if(user.views.length > 0){ 
+                // We already have views data
+
+                //Find if the current product is already in the data set
+                let currentViewedProduct = user.views.find(view => view.productId.toString() === prodId.toString())
+
+                if(!currentViewedProduct){
+                    //The current product is not in the data set
+                    user.views = [
+                        ...user.views,
+                        {
+                            productId: prodId,
+                            times: [timeStamp],
+                            counter: 1
+                        }
+                    ]
+                } else {
+                    //the current product is in the data set
+                    user.views.forEach(view => {
+                        if(view.productId.toString() === prodId.toString()){
+                            view.times.push(timeStamp)
+                            view.counter = view.counter + 1
+                        }
+                    })
+                }
+            } else {
+                //No views data yet
+                user.views = [
+                    {
+                        productId: prodId,
+                        times: [timeStamp],
+                        counter: 1
+                    }
+                ]
+            }
 
             return user.save()
         })
