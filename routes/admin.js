@@ -12,6 +12,7 @@ const Admin = require('../models/admin');
 router.get('/products', adminController.getProducts);
 
 router.get('/users', adminController.getUsers);
+router.get('/connected-users', adminController.getConnectedUsers);
 
 router.get('/user/:userId', adminController.getUser)
 

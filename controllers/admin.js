@@ -305,6 +305,26 @@ exports.getUsers = (req, res, next ) => {
     })
 }
 
+exports.getConnectedUsers = (req, res, next) => {
+    User
+    .find({ active: true})
+    .select('firstName lastName')
+    .then(users => {
+        if(!users){
+            const error = new Error('No connected users found')
+            error.statusCode = 404;
+            throw error
+        }
+
+        res
+        .status(200)
+        .json({ message: 'Fetched users', users: users})
+    })
+    .catch(err => {
+        console.log(err)
+    })
+}
+
 exports.getUser = (req, res, next) => {
 
     let userData;

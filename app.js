@@ -16,7 +16,7 @@ const timeStampGenerator = require('./utilities/timeStampGenerator');
 const adminRoutes = require('./routes/admin');
 const authRoutes = require('./routes/auth');
 const messageRoutes = require('./routes/messages');
-const statsRoutes = require('./routes/stat');
+const statsRoutes = require('./routes/stats');
 const productsRoutes = require('./routes/products')
 const userRoutes = require('./routes/user');
 
