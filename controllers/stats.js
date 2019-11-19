@@ -115,10 +115,32 @@ exports.getProductsStats = (req, res, next) => {
                     } 
             })
 
-            
+
             res
             .status(200)
             .json({ message: 'Fetched products stats', stats: statsData})
+        })
+        .catch(err => {
+            console.log(err)
+        })
+}
+
+exports.getUserConnectionStats = (req, res, next) => {
+
+
+    User
+        .find()
+        .select('connection')
+        .then(stats => {
+            if(!stats){
+                const error = new Error('Not able to get user connection stats');
+                error.statusCode = 404
+                throw error
+            }
+
+            res
+            .status(200)
+            .json({ message: 'Fetched user connection stats', stats: stats})
         })
         .catch(err => {
             console.log(err)
