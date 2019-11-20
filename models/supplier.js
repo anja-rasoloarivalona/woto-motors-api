@@ -10,7 +10,7 @@ const supplierSchema = new Schema({
     responsibles: [{
         name: String,
         email: String,
-        number: String,
+        phoneNumber: String,
         title: String
     }]
 })
