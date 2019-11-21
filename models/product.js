@@ -66,7 +66,10 @@ const productSchema = new Schema({
         type: String
     }],
 
-
+    suppliers: {
+        type: Schema.Types.ObjectId,
+        ref: 'Supplier'
+    },
 
     views: [{
         userId: String,

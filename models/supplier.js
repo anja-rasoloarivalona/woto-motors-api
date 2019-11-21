@@ -12,6 +12,11 @@ const supplierSchema = new Schema({
         email: String,
         phoneNumber: String,
         title: String
+    }],
+
+    products: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Product'
     }]
 })
 
