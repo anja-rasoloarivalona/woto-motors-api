@@ -113,6 +113,7 @@ exports.initAppDatas = (req, res, next) => {
         
 }
 
+
 exports.getProducts = (req, res, next ) => {
     let madeQueries = [],
         priceQueries,
@@ -206,8 +207,10 @@ exports.getProducts = (req, res, next ) => {
                 yearQueries
             ]
         })
-        .select('general _id createdAt')
+        .select('general _id createdAt supplier')
         .sort(sort)
+        .populate('supplier.info')
+        .exec()      
         .then(products => {
             res
                 .status(200)

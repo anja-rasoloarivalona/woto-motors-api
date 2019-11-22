@@ -28,6 +28,8 @@ exports.getProduct = (req, res, next ) => {
     const ID = mongoose.Types.ObjectId(req.params.prodId);
     Product
         .findById(ID)
+        .populate('supplier.info')
+        .exec()
         .then(product => {
             if(!product){
                 const error = new Error('Product not found');
@@ -53,13 +55,10 @@ exports.addProduct = (req, res, next) => {
     let newProduct;
 
 
-    console.log('adding...');
+    console.log('adding...', req.body);
 
     let imageUrlsString = req.body.imageUrls;
     let featuresString = req.body.features;
-
-    let supplierId = req.body.supplierId;
-
     
     let imageUrlsArray = imageUrlsString.split(',');
     let featuresArray = featuresString.split(',');
@@ -70,7 +69,7 @@ exports.addProduct = (req, res, next) => {
     
 
     const product = new Product({
-        general: [{
+        general: {
             title: req.body.title,
             made: req.body.made,
             model: req.body.model,
@@ -86,21 +85,26 @@ exports.addProduct = (req, res, next) => {
             mainImgUrl: mainImgUrl,
             publicity: req.body.publicity,
             homePage: req.body.homePage
-        }],
+        },
 
-        tech: [{
+        tech: {
             nbGearRatios: req.body.nbGearRatios,
             nbCylinders: req.body.nbCylinders,
             motorSize: req.body.motorSize,
             maxSpeed: req.body.maxSpeed,
-        }],
+        },
 
-        supplier: supplierId,
+        supplier: {
+            info: req.body.supplierId,
+            reference: req.body.supplierReference,
+            price: req.body.supplierPrice
 
-        design: [{
+        },
+
+        design: {
             intColor: req.body.intColor,
             extColor: req.body.extColor
-        }],
+        },
 
         features: featuresArray, 
         albumId: req.body.albumId,
@@ -112,7 +116,7 @@ exports.addProduct = (req, res, next) => {
         .save()
         .then(result => {
             newProduct = result;
-            return Supplier.findById(supplierId)
+            return Supplier.findById(req.body.supplierId)
         }) 
         .then(supplier => {
             if(!supplier){
@@ -137,7 +141,10 @@ exports.addProduct = (req, res, next) => {
 
 
 exports.updateProduct = (req, res, next) => {
-    console.log('updating')
+    
+
+    let product;
+    let supplierId = req.body.supplierId
 
 
     const ID = mongoose.Types.ObjectId(req.body.productBeingEditedID);
@@ -159,47 +166,70 @@ exports.updateProduct = (req, res, next) => {
                 throw error
             }
 
-            product.general[0].title = req.body.title;
-            product.general[0].made = req.body.made;
-            product.general[0].model = req.body.model;
-            product.general[0].year = req.body.year;
-            product.general[0].price = req.body.price;
-            product.general[0].nbKilometers = req.body.nbKilometers;
-            product.general[0].gazol = req.body.gazol;
-            product.general[0].yearOfRelease = req.body.yearOfRelease;
-            product.general[0].transmissionType = req.body.transmissionType;
-            product.general[0].nbOwners = req.body.nbOwners;
-            product.general[0].serialNumber = req.body.serialNumber;
-            product.general[0].generalState = req.body.generalState;
-            product.general[0].publicity = req.body.publicity;
-            product.general[0].homePage = req.body.homePage;
+            product.general.title = req.body.title;
+            product.general.made = req.body.made;
+            product.general.model = req.body.model;
+            product.general.year = req.body.year;
+            product.general.price = req.body.price;
+            product.general.nbKilometers = req.body.nbKilometers;
+            product.general.gazol = req.body.gazol;
+            product.general.yearOfRelease = req.body.yearOfRelease;
+            product.general.transmissionType = req.body.transmissionType;
+            product.general.nbOwners = req.body.nbOwners;
+            product.general.serialNumber = req.body.serialNumber;
+            product.general.generalState = req.body.generalState;
+            product.general.publicity = req.body.publicity;
+            product.general.homePage = req.body.homePage;
+            product.general.mainImgUrl = mainImgUrl;
 
-            product.general[0].mainImgUrl = mainImgUrl;
-
-
-           product.tech[0].nbGearRatios = req.body.nbGearRatios;
-           product.tech[0].nbCylinders = req.body.nbCylinders;
-           product.tech[0].motorSize = req.body.motorSize;
-           product.tech[0].maxSpeed = req.body.maxSpeed;
+            product.supplier.info = req.body.supplierId;
+            product.supplier.reference = req.body.supplierReference;
+            product.supplier.price = req.body.supplierPrice
 
 
-           product.design[0].intColor = req.body.intColor;
-           product.design[0].extColor = req.body.extColor;
+           product.tech.nbGearRatios = req.body.nbGearRatios;
+           product.tech.nbCylinders = req.body.nbCylinders;
+           product.tech.motorSize = req.body.motorSize;
+           product.tech.maxSpeed = req.body.maxSpeed;
+
+
+           product.design.intColor = req.body.intColor;
+           product.design.extColor = req.body.extColor;
 
            product.features = featuresArray;
            product.imageUrls = imageUrlsArray;
 
            product.albumId = req.body.albumId;
 
-
-
-
             return product.save()
         })
         .then( result => {
+            product = result;
+            return Supplier.find()        
+        })
+        .then( suppliers => {
+
+            suppliers.forEach(supplier => {
+
+                if(supplier._id.toString() === supplierId.toString()){                
+                    if(!supplier.products.includes(ID)){
+                        supplier.products.push(ID)
+                    }
+                } else {
+                    if(supplier.products.includes(ID.toString())){
+                        console.log('product included')
+                        supplier.products = supplier.products.filter( productId => productId.toString() !== ID.toString());
+
+                      
+                    }
+                }
+
+                supplier.save()
+            })
+
             res.status(200).json({
                 message: 'Product updated',
-                product: result
+                product: product
             })
         })
         .catch(err => {

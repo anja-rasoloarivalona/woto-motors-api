@@ -52,8 +52,6 @@ exports.getSuppliers = (req, res, next) => {
         .populate('products')
         .exec()
         .then(suppliers => {
-
-                console.log('gewgweg', suppliers);
     
                 if(!suppliers){
                     const error = new Error('Could not fetch suppliers');

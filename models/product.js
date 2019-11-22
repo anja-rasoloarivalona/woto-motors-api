@@ -4,30 +4,30 @@ const Schema = mongoose.Schema;
 
 const productSchema = new Schema({
 
-    general: [{
+    general: {
         title: {
             type: String,
-            required: true
+            //required: true
         },
         
         made: {
             type: String,
-            required: true
+            //required: true
         },
 
         model: {
             type: String,
-            required: true
+            //required: true
         },
 
         year: {
             type: String,
-            required: true
+            //required: true
         },
 
         price: {
             type: Number,
-            required: true
+            //required: true
         },
 
         nbKilometers: Number,
@@ -42,20 +42,20 @@ const productSchema = new Schema({
         homePage: String,
         viewCounter: Number
     
-    }],
+    },
 
 
-    tech: [{
+    tech: {
         nbGearRatios: Number,
         nbCylinders: Number,
         motorSize: String,
         maxSpeed: String
-    }],
+    },
 
-    design: [{
+    design: {
         intColor: String,
         extColor: String
-    }],
+    },
 
     features: [{
         type: String
@@ -67,8 +67,12 @@ const productSchema = new Schema({
     }],
 
     supplier: {
-        type: Schema.Types.ObjectId,
-        ref: 'Supplier'
+        info: {
+            type: Schema.Types.ObjectId,
+            ref: 'Supplier'
+        },
+        reference: String,
+        price: Number
     },
 
     views: [{
