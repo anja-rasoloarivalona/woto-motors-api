@@ -2,6 +2,7 @@ const Product = require('../models/product');
 const Admin = require('../models/admin');
 const User = require('../models/user');
 const mongoose = require('mongoose');
+const Supplier = require('../models/supplier');
 
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -48,16 +49,25 @@ exports.getProduct = (req, res, next ) => {
 
 
 exports.addProduct = (req, res, next) => {
+
+    let newProduct;
+
+
     console.log('adding...');
 
     let imageUrlsString = req.body.imageUrls;
     let featuresString = req.body.features;
+
+    let supplierId = req.body.supplierId;
 
     
     let imageUrlsArray = imageUrlsString.split(',');
     let featuresArray = featuresString.split(',');
 
     let mainImgUrl = imageUrlsArray[0];
+
+
+    
 
     const product = new Product({
         general: [{
@@ -85,13 +95,11 @@ exports.addProduct = (req, res, next) => {
             maxSpeed: req.body.maxSpeed,
         }],
 
+        supplier: supplierId,
+
         design: [{
             intColor: req.body.intColor,
             extColor: req.body.extColor
-        }],
-
-        stats: [{
-            viewCounter: 0
         }],
 
         features: featuresArray, 
@@ -103,11 +111,24 @@ exports.addProduct = (req, res, next) => {
     product
         .save()
         .then(result => {
+            newProduct = result;
+            return Supplier.findById(supplierId)
+        }) 
+        .then(supplier => {
+            if(!supplier){
+                const error = new Error('Supplier not found');
+                error.statusCode = 404
+                throw error
+            }
+            supplier.products.push(newProduct)
+            return supplier.save()
+        })
+        .then( result => {
             res.status(201).json({
                 message: 'Product created successfully!',
-                product: product
+                product: newProduct
             })
-        }) 
+        })
         .catch(err => {
             console.log(err)
         })

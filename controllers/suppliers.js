@@ -49,16 +49,21 @@ exports.addSupplier = (req, res, next) => {
 exports.getSuppliers = (req, res, next) => {
     Supplier
         .find()
+        .populate('products')
+        .exec()
         .then(suppliers => {
-            if(!suppliers){
-                const error = new Error('Could not fetch suppliers');
-                error.statusCode = 401;
-                throw error
-            }
 
-             res
-              .status(200)
-              .json({ message: 'Fetched suppliers', suppliers: suppliers})
+                console.log('gewgweg', suppliers);
+    
+                if(!suppliers){
+                    const error = new Error('Could not fetch suppliers');
+                    error.statusCode = 401;
+                    throw error
+                }
+    
+                 res
+                  .status(200)
+                  .json({ message: 'Fetched suppliers', suppliers: suppliers})
         })
         .catch(err => {
             console.log(err)
