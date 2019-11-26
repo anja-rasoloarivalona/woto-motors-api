@@ -10,7 +10,7 @@ const productSchema = new Schema({
             //required: true
         },
         
-        made: {
+        brand: {
             type: String,
             //required: true
         },

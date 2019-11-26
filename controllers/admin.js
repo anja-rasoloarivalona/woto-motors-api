@@ -10,10 +10,14 @@ const { validationResult } = require('express-validator')
 
 
 exports.getProducts = (req, res, next) => {
+
+
     Product
         .find()
         .select('general _id')
         .then(products => {
+
+
             res
               .status(200)
               .json({ message: 'Fetched admin products', products: products})
@@ -65,13 +69,13 @@ exports.addProduct = (req, res, next) => {
 
     let mainImgUrl = imageUrlsArray[0];
 
-
+    
     
 
     const product = new Product({
         general: {
             title: req.body.title,
-            made: req.body.made,
+            brand: req.body.brand,
             model: req.body.model,
             year: req.body.year,
             price: req.body.price,
@@ -96,7 +100,7 @@ exports.addProduct = (req, res, next) => {
 
         supplier: {
             info: req.body.supplierId,
-            reference: req.body.supplierReference,
+            reference: req.body.reference,
             price: req.body.supplierPrice
 
         },
@@ -167,7 +171,7 @@ exports.updateProduct = (req, res, next) => {
             }
 
             product.general.title = req.body.title;
-            product.general.made = req.body.made;
+            product.general.brand= req.body.brand;
             product.general.model = req.body.model;
             product.general.year = req.body.year;
             product.general.price = req.body.price;
@@ -183,7 +187,7 @@ exports.updateProduct = (req, res, next) => {
             product.general.mainImgUrl = mainImgUrl;
 
             product.supplier.info = req.body.supplierId;
-            product.supplier.reference = req.body.supplierReference;
+            product.supplier.reference = req.body.reference;
             product.supplier.price = req.body.supplierPrice
 
 

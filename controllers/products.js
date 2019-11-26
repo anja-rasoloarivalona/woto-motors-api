@@ -146,7 +146,7 @@ exports.getProducts = (req, res, next ) => {
     let datas = {};
 
     if(req.query.made === 'undefined' || req.query.made === undefined || req.query.made === 'all'){
-        madeQueries = [{ "general.made" : { $ne: null}}]
+        madeQueries = [{ "general.brand" : { $ne: null}}]
     } else {
         mades = req.query.made.split('_');
 
@@ -164,12 +164,12 @@ exports.getProducts = (req, res, next ) => {
                 let sort; 
                 if(model !== 'all'){
                     sort = {
-                        "general.made": made,
+                        "general.brand": made,
                         "general.model": model
                     }
                 } else {
                     sort = {
-                        "general.made": made,
+                        "general.brand": made,
                     }
                 }
                 madeQueries = [...madeQueries, sort]
@@ -207,7 +207,7 @@ exports.getProducts = (req, res, next ) => {
                 yearQueries
             ]
         })
-        .select('general _id createdAt supplier')
+       .select('general _id createdAt supplier')
         .sort(sort)
         .populate('supplier.info')
         .exec()      
