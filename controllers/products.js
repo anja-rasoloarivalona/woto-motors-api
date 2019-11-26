@@ -9,7 +9,7 @@ exports.initAppDatas = (req, res, next) => {
     let homeInventoryProducts = [];
     let mostPopularProducts = [];
 
-    let madeAndModelsData = {};
+    let brandAndModelsData = {};
     let keys = []
 
     Product
@@ -22,17 +22,17 @@ exports.initAppDatas = (req, res, next) => {
 
         products.forEach(product => {
 
-            if(product.general[0].publicity === 'oui'){
+            if(product.general.publicity === 'oui'){
                 publicityProducts.push(product)
             }
 
-            if(product.general[0].homePage === 'oui'){
+            if(product.general.homePage === 'oui'){
                 homeInventoryProducts.push(product)
             }
 
-            let made = product.general[0].made
-            let model  = product.general[0].model
-            let price = product.general[0].price
+            let brand = product.general.brand
+            let model  = product.general.model
+            let price = product.general.price
 
             let modelsData = {
                 [model]: {
@@ -41,12 +41,12 @@ exports.initAppDatas = (req, res, next) => {
                 }
             }
      
-            if(!keys.includes(made)){
+            if(!keys.includes(brand)){
 
-                //Add a new made array in the keys array
-                madeAndModelsData = {
-                    ...madeAndModelsData,
-                    [made]: {
+                //Add a new brand array in the keys array
+                brandAndModelsData = {
+                    ...brandAndModelsData,
+                    [brand]: {
                         price: {
                             min: price,
                             max: price
@@ -56,33 +56,33 @@ exports.initAppDatas = (req, res, next) => {
                         }
                     }
                 }
-                keys = Object.keys(madeAndModelsData)
+                keys = Object.keys(brandAndModelsData)
 
             } else {
-                //made array already exist so we have 2 possiblities
+                //brand array already exist so we have 2 possiblities
             
-                if(madeAndModelsData[made].datas[model] !== undefined){
-                     //1st case : the made array already contains the model of the current product
-                    let modelPrice = madeAndModelsData[made].datas[model];
+                if(brandAndModelsData[brand].datas[model] !== undefined){
+                     //1st case : the brand array already contains the model of the current product
+                    let modelPrice = brandAndModelsData[brand].datas[model];
 
                     if(modelPrice.min > price){
-                     
-                        madeAndModelsData[made].datas[model].min = price
+                    
+                        brandAndModelsData[brand].datas[model].min = price
                     }
 
                     if(modelPrice.max < price){
-                        madeAndModelsData[made].datas[model].max = price
+                        brandAndModelsData[brand].datas[model].max = price
                     }
 
 
                 } else {
-                    //2nd case : the made array doesn't contain the model of the current product
-                    madeAndModelsData = {
-                        ...madeAndModelsData,
-                        [made]:{
-                            ...madeAndModelsData[made],
+                    //2nd case : the brand array doesn't contain the model of the current product
+                    brandAndModelsData = {
+                        ...brandAndModelsData,
+                        [brand]:{
+                            ...brandAndModelsData[brand],
                             datas: {
-                                ...madeAndModelsData[made].datas,
+                                ...brandAndModelsData[brand].datas,
                                 ...modelsData
                             }        
                         }
@@ -90,12 +90,12 @@ exports.initAppDatas = (req, res, next) => {
                 }
             }
 
-            if(madeAndModelsData[made].price.min > price){
-                madeAndModelsData[made].price.min = price
+            if(brandAndModelsData[brand].price.min > price){
+                brandAndModelsData[brand].price.min = price
             }
 
-            if(madeAndModelsData[made].price.max < price){
-                madeAndModelsData[made].price.max = price
+            if(brandAndModelsData[brand].price.max < price){
+                brandAndModelsData[brand].price.max = price
             }
            
         })
@@ -104,7 +104,7 @@ exports.initAppDatas = (req, res, next) => {
             .json({ message: 'Fetched user products', 
                 publicityProducts: publicityProducts,
                 homeInventoryProducts: homeInventoryProducts,
-                madeAndModelsData: madeAndModelsData,
+                brandAndModelsData: brandAndModelsData,
                 mostPopularProducts: mostPopularProducts})
         })
         .catch(err => {
@@ -115,7 +115,7 @@ exports.initAppDatas = (req, res, next) => {
 
 
 exports.getProducts = (req, res, next ) => {
-    let madeQueries = [],
+    let brandQueries = [],
         priceQueries,
         yearQueries
 
@@ -142,37 +142,37 @@ exports.getProducts = (req, res, next ) => {
 
     
 
-    let mades
+    let brands
     let datas = {};
 
-    if(req.query.made === 'undefined' || req.query.made === undefined || req.query.made === 'all'){
-        madeQueries = [{ "general.brand" : { $ne: null}}]
+    if(req.query.brand === 'undefined' || req.query.brand === undefined || req.query.brand === 'all'){
+        brandQueries = [{ "general.brand" : { $ne: null}}]
     } else {
-        mades = req.query.made.split('_');
+        brands = req.query.brand.split('_');
 
-        mades.forEach( i => {
+        brands.forEach( i => {
             if(i !== ''){        
-                let made = i.split(':')[0]
-                let madeData = i.split(':')[1].split(',')
+                let brand = i.split(':')[0]
+                let brandData = i.split(':')[1].split(',')
     
-                datas[made] = madeData
+                datas[brand] = brandData
             }
         })
 
-        Object.keys(datas).map( made => {
-            datas[made].forEach(model => {
+        Object.keys(datas).map( brand => {
+            datas[brand].forEach(model => {
                 let sort; 
                 if(model !== 'all'){
                     sort = {
-                        "general.brand": made,
+                        "general.brand": brand,
                         "general.model": model
                     }
                 } else {
                     sort = {
-                        "general.brand": made,
+                        "general.brand": brand,
                     }
                 }
-                madeQueries = [...madeQueries, sort]
+                brandQueries = [...brandQueries, sort]
             })
             
         })
@@ -202,7 +202,7 @@ exports.getProducts = (req, res, next ) => {
     Product
         .find({ 
             $and: [
-               {$or: madeQueries},
+               {$or: brandQueries},
                 priceQueries,
                 yearQueries
             ]
@@ -222,10 +222,10 @@ exports.getProducts = (req, res, next ) => {
 }
 
 exports.getProduct = (req, res, next) => {
-    let madeRequested = 'Toyota'
+    let brandRequested = 'Toyota'
     let modelRequested = 'Elantra'
     let priceRequested = 2000
-    const {made, model, price, userId} = req.query;
+    const {brand, model, price, userId} = req.query;
 
     let userIdMakingRequest = userId;
     let productsResponse;
@@ -240,8 +240,8 @@ exports.getProduct = (req, res, next) => {
         userIdMakingRequest = mongoose.Types.ObjectId(userId)
     }
 
-    if(made !== 'null'){
-        madeRequested = made
+    if(brand !== 'null'){
+        brandRequested = brand
     } 
     if(model !== 'null'){
         modelRequested = model
@@ -253,7 +253,7 @@ exports.getProduct = (req, res, next) => {
     const prodId = mongoose.Types.ObjectId(req.params.prodId);
 
     Product
-        .find({   $or: [{_id: prodId}, {'general.made' : madeRequested}] })
+        .find({   $or: [{_id: prodId}, {'general.brand' : brandRequested}] })
         .then(products => {       
             if(!products){
                 const error = new Error('Product not found');
@@ -265,11 +265,11 @@ exports.getProduct = (req, res, next) => {
             products.forEach(product => {
 
               if(product._id.toString() === prodId.toString()){
-                  let viewCounter = product.general[0].viewCounter;
+                  let viewCounter = product.general.viewCounter;
                   if(viewCounter === undefined){
-                     product.general[0].viewCounter = 1
+                     product.general.viewCounter = 1
                   } else {
-                    product.general[0].viewCounter = product.general[0].viewCounter + 1
+                    product.general.viewCounter = product.general.viewCounter + 1
                   }
 
                   product.views = [...product.views, {

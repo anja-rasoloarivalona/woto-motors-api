@@ -74,7 +74,7 @@ exports.getProductsStats = (req, res, next) => {
 
     Product
         .find()
-        .select('general.viewCounter general.made general.model')
+        .select('general.viewCounter general.brand general.model')
         .sort({ 'general.viewCounter': -1})
         .then(products => {
             if(!products){
@@ -83,32 +83,32 @@ exports.getProductsStats = (req, res, next) => {
                 throw error
             }
             products.forEach( product => {
-                if(!Object.keys(statsData).includes(product.general[0].made)){
-                    //The current made is not part of the data set yet
-                    statsData[product.general[0].made] = {
-                        views : product.general[0].viewCounter,
+                if(!Object.keys(statsData).includes(product.general.brand)){
+                    //The current brand is not part of the data set yet
+                    statsData[product.general.brand] = {
+                        views : product.general.viewCounter,
                         models : 
-                            { [product.general[0].model] : product.general[0].viewCounter}
+                            { [product.general.model] : product.general.viewCounter}
                         
                     }
                 } else {
-                    //The current made is already include in the data set
+                    //The current brand is already include in the data set
                    
-                    if(!Object.keys(statsData[product.general[0].made].models).includes(product.general[0].model)){
-                            //The model of the current made is not in the data set
-                            statsData[product.general[0].made] = {
-                                views: statsData[product.general[0].made].views + product.general[0].viewCounter,
+                    if(!Object.keys(statsData[product.general.brand].models).includes(product.general.model)){
+                            //The model of the current brand is not in the data set
+                            statsData[product.general.brand] = {
+                                views: statsData[product.general.brand].views + product.general.viewCounter,
                                 models: {
-                                    ...statsData[product.general[0].made].models,
-                                    [product.general[0].model] : product.general[0].viewCounter}
+                                    ...statsData[product.general.brand].models,
+                                    [product.general.model] : product.general.viewCounter}
                             }
                         } else {
-                            //The model of the current made is already in the data set  
-                            statsData[product.general[0].made] = {
-                                views: statsData[product.general[0].made].views + product.general[0].viewCounter,
+                            //The model of the current brand is already in the data set  
+                            statsData[product.general.brand] = {
+                                views: statsData[product.general.brand].views + product.general.viewCounter,
                                 models: {
-                                    ...statsData[product.general[0].made].models,
-                                    [product.general[0].model] : statsData[product.general[0].made].models[product.general[0].model] + product.general[0].viewCounter
+                                    ...statsData[product.generl.brand].models,
+                                    [product.general.model] : statsData[product.general.brand].models[product.general.model] + product.general.viewCounter
                                 }
                             }
                         }
