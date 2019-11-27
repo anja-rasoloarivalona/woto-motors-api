@@ -9,5 +9,6 @@ router.post('/add-supplier', suppliersController.addSupplier)
 
 router.put('/edit-supplier', suppliersController.editSupplier)
 
+router.delete('/delete-supplier/:supplierId', suppliersController.deleteSUpplier);
 
 module.exports = router;

@@ -70,8 +70,7 @@ exports.getSuppliers = (req, res, next) => {
 
 exports.editSupplier = (req, res, next) => {
 
-    console.log(req.body);
-
+    console.log('editing....');
 
     let name = req.body.name,
         email = req.body.email,
@@ -120,4 +119,28 @@ exports.editSupplier = (req, res, next) => {
             })
 
 
+}
+
+exports.deleteSUpplier = (req, res, next) => {
+    const supplierId = req.params.supplierId;
+
+    Supplier
+        .findById(supplierId)
+        .then( supplier => {
+            if(!supplier){
+                const error = new Error('Could not find supplier.');
+                error.statusCode = 404;
+                throw error;
+            }
+            return Product.deleteMany({ _id: { $in: supplier.products}});
+        })
+        .then( result => {
+            return Supplier.findByIdAndRemove(supplierId)
+        })
+        .then( result => {
+            res.status(200).json({ message: 'Supplier deleted'})
+        })
+        .catch(err => {
+                console.log(err)
+        })
 }
