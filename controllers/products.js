@@ -117,7 +117,8 @@ exports.initAppDatas = (req, res, next) => {
 exports.getProducts = (req, res, next ) => {
     let brandQueries = [],
         priceQueries,
-        yearQueries
+        yearQueries,
+        supplierQuery
 
         console.log('req', req.query.price === undefined);
 
@@ -140,6 +141,17 @@ exports.getProducts = (req, res, next ) => {
         yearQueries ={ "general.year" : { $gte: minYear, $lte: maxYear} }
     }
 
+    const { supplier } = req.query;
+
+    console.log('query sup', supplier);
+
+    
+    if(supplier === 'undefined' || supplier === undefined || supplier === 'null' || supplier === 'all'){
+        supplierQuery = {'supplier.info' : {$ne: null}}
+    } else {
+        supplierQuery = {'supplier.info' : supplier}
+    }
+   
     
 
     let brands
@@ -178,36 +190,34 @@ exports.getProducts = (req, res, next ) => {
         })
     }
 
+
     const { sortBy } = req.query;
-
     let sort;
-
-    if(sortBy === 'undefined' ||sortBy === 'prix croissant' ){
+    if(sortBy === 'undefined' ||sortBy === 'prix_croissant' ){
         sort = {"general.price": 1};
     }
-
-    if(sortBy === 'prix décroissant'){
+    if(sortBy === 'prix_décroissant'){
         sort = {"general.price": -1};
     }
-
     if(sortBy === 'popularité'){
         sort = {"general.viewCounter": -1};
     }
-
     if(sortBy === 'date'){
         sort = {createdAt: -1};
     }
 
+  
 
     Product
         .find({ 
             $and: [
                {$or: brandQueries},
                 priceQueries,
-                yearQueries
+                yearQueries,
+                supplierQuery
             ]
         })
-       .select('general _id createdAt supplier')
+       .select('general _id createdAt supplier followers')
         .sort(sort)
         .populate('supplier.info')
         .exec()      
