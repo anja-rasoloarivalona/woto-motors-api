@@ -41,7 +41,7 @@ exports.initAppDatas = (req, res, next) => {
                 }
             }
      
-            if(!keys.includes(brand)){
+            if(!Object.keys(brandAndModelsData).includes(brand)){
 
                 //Add a new brand array in the keys array
                 brandAndModelsData = {
@@ -113,20 +113,15 @@ exports.initAppDatas = (req, res, next) => {
         
 }
 
-
-exports.getProducts = (req, res, next ) => {
+exports.getProductsAsClient = (req, res, next ) => {
     let brandQueries = [],
         priceQueries,
         yearQueries,
         supplierQuery
 
-        console.log('req', req.query.price === undefined);
-
     if(req.query.price === 'undefined' || req.query.price === undefined){
         priceQueries = {"general.price" : { $ne: null}}
     } else {
-        console.log('req passed', req.query.price);
-
         let minPrice = req.query.price.split(':')[0]
         let maxPrice = req.query.price.split(':')[1];
         priceQueries={ "general.price" : { $gte: minPrice, $lte: maxPrice} }
@@ -141,17 +136,12 @@ exports.getProducts = (req, res, next ) => {
         yearQueries ={ "general.year" : { $gte: minYear, $lte: maxYear} }
     }
 
-    const { supplier } = req.query;
-
-    console.log('query sup', supplier);
-
-    
+    const { supplier } = req.query;   
     if(supplier === 'undefined' || supplier === undefined || supplier === 'null' || supplier === 'all'){
         supplierQuery = {'supplier.info' : {$ne: null}}
     } else {
         supplierQuery = {'supplier.info' : supplier}
     }
-   
     
 
     let brands
@@ -206,8 +196,6 @@ exports.getProducts = (req, res, next ) => {
         sort = {createdAt: -1};
     }
 
-  
-
     Product
         .find({ 
             $and: [
@@ -224,7 +212,121 @@ exports.getProducts = (req, res, next ) => {
         .then(products => {
             res
                 .status(200)
-                .json({ message: 'Products feteched', products: products})
+                .json({ message: 'Products feteched', 
+                        products: products,
+                    })
+        })
+        .catch( err => {
+            console.log(err)
+        })
+}
+
+exports.getProductsAsAdmin = (req, res, next ) => {
+    let brandQueries,
+        priceMinQueries,
+        priceMaxQueries,
+        minYearQueries,
+        maxYearQueries,
+        modelQueries,
+        supplierQuery
+
+        console.log(req.query)
+
+        const currentPage = req.query.page || 1;
+        const itemsPerPage = 6;
+
+
+    //price
+
+    if(req.query.priceMin === 'undefined' || req.query.priceMin === undefined){
+        priceMinQueries = {"general.price" : { $ne: null}}
+    } else {
+        priceMinQueries = { "general.price" : { $gte: req.query.priceMin} }
+    }
+
+    if(req.query.priceMax === 'undefined' || req.query.priceMax === undefined){
+        priceMaxQueries = {"general.price" : { $ne: null}}
+    } else {
+        priceMaxQueries = { "general.price" : { $lte: req.query.priceMax} }
+    }
+
+
+    //year 
+
+    if(req.query.minYear === 'undefined' || req.query.minYear === undefined){
+        minYearQueries = {"general.year" : { $ne: null}}
+    } else {
+        minYearQueries = { "general.year" : { $gte: req.query.minYear} }
+    }
+
+    if(req.query.maxYear === 'undefined' || req.query.maxYear === undefined){
+        maxYearQueries = {"general.year" : { $ne: null}}
+    } else {
+        maxYearQueries = { "general.year" : { $lte: req.query.maxYear} }
+    }
+
+    const { supplierId } = req.query; 
+
+    if(supplierId === 'undefined' || supplierId === undefined || supplierId === 'null' || supplierId === 'all'){
+        supplierQuery = {'supplier.info' : {$ne: null}}
+    } else {
+        supplierQuery = {'supplier.info' : supplierId}
+    }
+
+    const {brand} = req.query;
+    if(brand === 'undefined' || brand === undefined || brand === 'all'){
+        brandQueries = { "general.brand" : { $ne: null}}
+    } else {
+        brandQueries = {'general.brand': brand}
+    }
+
+    const {model} = req.query;
+    if(model === 'undefined' || model === undefined || model === 'all'){
+        modelQueries = { "general.model" : { $ne: null}}
+    } else {
+        modelQueries = {'general.model': model}
+    }
+
+
+    const { sortBy } = req.query;
+    let sort;
+    if(sortBy === 'undefined' ||sortBy === 'prix_croissant' ){
+        sort = {"general.price": 1};
+    }
+    if(sortBy === 'prix_décroissant'){
+        sort = {"general.price": -1};
+    }
+    if(sortBy === 'popularité'){
+        sort = {"general.viewCounter": -1};
+    }
+    if(sortBy === 'date'){
+        sort = {createdAt: -1};
+    }
+
+    Product
+        .find({ 
+            $and: [
+                brandQueries,
+                modelQueries,
+                priceMinQueries,
+                priceMaxQueries,
+                minYearQueries,
+                maxYearQueries,
+                supplierQuery
+            ]
+        })
+       .select('general _id createdAt supplier followers')
+        .sort(sort)
+        .skip( (currentPage - 1) * itemsPerPage)
+        .limit(itemsPerPage)
+        .populate('supplier.info')
+        .exec()      
+        .then(products => {
+            res
+                .status(200)
+                .json({ message: 'Products feteched', 
+                        products: products,
+                    })
         })
         .catch( err => {
             console.log(err)

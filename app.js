@@ -20,6 +20,7 @@ const statsRoutes = require('./routes/stats');
 const productsRoutes = require('./routes/products')
 const userRoutes = require('./routes/user');
 const suppliersRoutes = require('./routes/suppliers');
+const initRoutes = require('./routes/init');
 
 app.use(helmet());
 app.use(compression())
@@ -46,7 +47,8 @@ app.use('/messages', messageRoutes);
 app.use('/stats', statsRoutes);
 app.use('/product', productsRoutes);
 app.use('/user', userRoutes);
-app.use('/suppliers', suppliersRoutes)
+app.use('/suppliers', suppliersRoutes);
+app.use('/init', initRoutes)
 
 
 
