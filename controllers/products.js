@@ -230,8 +230,6 @@ exports.getProductsAsAdmin = (req, res, next ) => {
         modelQueries,
         supplierQuery
 
-        console.log(req.query)
-
         const currentPage = req.query.page || 1;
         const itemsPerPage = 6;
 

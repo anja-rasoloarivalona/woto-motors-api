@@ -85,37 +85,47 @@ exports.getProductsStats = (req, res, next) => {
             products.forEach( product => {
                 if(!Object.keys(statsData).includes(product.general.brand)){
                     //The current brand is not part of the data set yet
-                    statsData[product.general.brand] = {
-                        views : product.general.viewCounter,
-                        models : 
-                            { [product.general.model] : product.general.viewCounter}
-                        
+                    statsData = {
+                        ...statsData,
+                        [product.general.brand] : {
+                            views: product.general.viewCounter ? product.general.viewCounter : 0,
+                            models: {
+                                [product.general.model] : product.general.viewCounter ? product.general.viewCounter : 0
+                            }
+                        }
                     }
                 } else {
                     //The current brand is already include in the data set
-                   
+
+                    let viewCounter = product.general.viewCounter ? product.general.viewCounter : 0;
                     if(!Object.keys(statsData[product.general.brand].models).includes(product.general.model)){
                             //The model of the current brand is not in the data set
-                            statsData[product.general.brand] = {
-                                views: statsData[product.general.brand].views + product.general.viewCounter,
-                                models: {
-                                    ...statsData[product.general.brand].models,
-                                    [product.general.model] : product.general.viewCounter}
+                            statsData = {
+                                ...statsData,
+                                [product.general.brand] : {
+                                    views: statsData[product.general.brand].views + viewCounter,
+                                    models: {
+                                        ...statsData[product.general.brand].models,
+                                        [product.general.model] : viewCounter
+                                    }
+                                }
                             }
                         } else {
                             //The model of the current brand is already in the data set  
-                            statsData[product.general.brand] = {
-                                views: statsData[product.general.brand].views + product.general.viewCounter,
-                                models: {
-                                    ...statsData[product.generl.brand].models,
-                                    [product.general.model] : statsData[product.general.brand].models[product.general.model] + product.general.viewCounter
+
+                            statsData = {
+                                ...statsData,
+                                [product.general.brand] : {
+                                    views: statsData[product.general.brand].views + viewCounter,
+                                    models: {
+                                        ...statsData[product.general.brand].models,
+                                        [product.general.model]: statsData[product.general.brand].models[product.general.model] + viewCounter
+                                    }
                                 }
                             }
                         }
                     } 
             })
-
-
             res
             .status(200)
             .json({ message: 'Fetched products stats', stats: statsData})
