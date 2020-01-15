@@ -47,7 +47,7 @@ exports.getMessagesUserAsAdmin = (req, res, next) => {
   
 
     User.findById(userId)
-        .select('firstName lastName messages notification')
+        .select('firstName lastName messages notification active email phoneNumber notes')
        .then( user => {
             if(!user){
                 const error = new Error('No user found')
@@ -74,11 +74,11 @@ exports.getMessagesUserAsAdmin = (req, res, next) => {
 
             return user.save()
        })
-       .then( user => {
+       .then( userInfo => {
             res.status(200)
             .json({
                 info: 'Messages fetched',
-                messages: user
+                user: userInfo
             })
        })
 }

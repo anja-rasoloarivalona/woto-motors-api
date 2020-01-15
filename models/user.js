@@ -49,14 +49,24 @@ const userSchema = new Schema({
     notification: Boolean,
     active: Boolean,
 
-    views: [{
+    views: [
+        {
         productId: String,
         times: [{
             type: String
             }],
         counter: Number
-    }],
+        }
+    ],
 
+    notes: [
+        {
+            timeStamp: String,
+            text: String,
+            creator: String,
+            title: String
+        }
+    ],
     favorites: [{
         type: String
     }]

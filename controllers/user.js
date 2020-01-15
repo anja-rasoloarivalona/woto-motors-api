@@ -3,13 +3,9 @@ const mongoose = require('mongoose');
 const Product = require('../models/product')
 
 exports.addFavorite = async (req, res, next) => {
-
-    console.log('aaaaading');
-
     let userId =  mongoose.Types.ObjectId(req.params.userId) 
     let prodId =  mongoose.Types.ObjectId(req.query.prodId) 
     let action = 'add';
-
     try {
         await toggleFollowerToProduct(prodId, userId, action);
         await toggleFavoriteToUser(prodId, userId, action);
@@ -17,23 +13,15 @@ exports.addFavorite = async (req, res, next) => {
     catch (err) {
         console.log(err)
     }
-
     res.status(200).json({
         message: 'product added to favorite'
-    })
-   
-    
+    })   
 }
 
 exports.removeFavorite = async (req, res, next) => {
-
-    console.log('removininging');
-
-
     let userId =  mongoose.Types.ObjectId(req.params.userId) 
     let prodId =  mongoose.Types.ObjectId(req.query.prodId) 
     let action = 'remove';
-
     try {
         await toggleFollowerToProduct(prodId, userId, action);
         await toggleFavoriteToUser(prodId, userId, action);
@@ -90,6 +78,10 @@ exports.getFavoriteProducts = (req, res, next) => {
             console.log(err)
         })
 
+}
+
+exports.editUserInfos = (req, res, next) => {
+    
 }
 
 

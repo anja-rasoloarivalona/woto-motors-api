@@ -231,7 +231,7 @@ exports.getProductsAsAdmin = (req, res, next ) => {
         supplierQuery
 
         const currentPage = req.query.page || 1;
-        const itemsPerPage = 6;
+        const itemsPerPage = 8;
 
 
     //price
@@ -301,29 +301,46 @@ exports.getProductsAsAdmin = (req, res, next ) => {
         sort = {createdAt: -1};
     }
 
+
+    let findQuery = {
+        $and: [
+            brandQueries,
+            modelQueries,
+            priceMinQueries,
+            priceMaxQueries,
+            minYearQueries,
+            maxYearQueries,
+            supplierQuery
+        ]
+    }
+
+    let totalProducts;
+
     Product
-        .find({ 
-            $and: [
-                brandQueries,
-                modelQueries,
-                priceMinQueries,
-                priceMaxQueries,
-                minYearQueries,
-                maxYearQueries,
-                supplierQuery
-            ]
+        .find(findQuery)
+        .then(products => {
+            if(!products){
+                const error = new Error('No Products Found')
+                error.statusCode = 404
+                throw error 
+            }
+            totalProducts = products.length;
+
+            return Product.find(findQuery)
+                .select('general _id createdAt supplier followers')
+                .sort(sort)
+                .skip( (currentPage - 1) * itemsPerPage)
+                .limit(itemsPerPage)
+                .populate('supplier.info')
+                .exec()  
         })
-       .select('general _id createdAt supplier followers')
-        .sort(sort)
-        .skip( (currentPage - 1) * itemsPerPage)
-        .limit(itemsPerPage)
-        .populate('supplier.info')
-        .exec()      
+            
         .then(products => {
             res
                 .status(200)
                 .json({ message: 'Products feteched', 
                         products: products,
+                        totalProducts: totalProducts
                     })
         })
         .catch( err => {
