@@ -14,8 +14,6 @@ exports.getProducts = (req, res, next) => {
         .find()
         .select('general _id')
         .then(products => {
-
-
             res
               .status(200)
               .json({ message: 'Fetched admin products', products: products})
