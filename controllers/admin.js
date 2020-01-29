@@ -10,8 +10,6 @@ const { validationResult } = require('express-validator')
 
 
 exports.getProducts = (req, res, next) => {
-
-
     Product
         .find()
         .select('general _id')
