@@ -439,6 +439,42 @@ exports.getProduct = (req, res, next) => {
         })
 }
 
+exports.getProductPublicity = (req, res, next) => {
+
+    let publicityProducts = [];
+    let homeProducts = [];
+
+    let query = [
+        { 'general.publicity': 'oui'},
+        { 'general.homePage': 'oui'},
+    ]
+
+    Product
+    .find({ $or: query})
+    .then(products => {
+        if(!products){
+            const error = new Error('No Products Found')
+            error.statusCode = 404
+            throw error 
+        }
+
+        products.forEach(product => {
+            if(product.general.publicity === 'oui'){
+                publicityProducts.push(product)
+            }
+            if(product.general.homePage === 'oui'){
+                homeProducts.push(product)
+            }
+        })
+
+        res
+        .status(200)
+        .json({ message: 'Products pub fetched', 
+                publicity: publicityProducts,
+                home: homeProducts
+            })
+    })
+}
 
 const addingViewsToUser = (userId, prodId, timeStamp) => {
     User.findById(userId)

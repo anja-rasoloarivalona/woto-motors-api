@@ -7,7 +7,10 @@ router.get('/admin', productsController.getProductsAsAdmin);
 
 
 router.get('/init', productsController.initAppDatas);
+router.get('/publicity', productsController.getProductPublicity)
 
-router.get('/:prodId', productsController.getProduct)
+router.get('/:prodId', productsController.getProduct);
+
+
 
 module.exports = router
