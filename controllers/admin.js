@@ -23,7 +23,6 @@ exports.getProducts = (req, res, next) => {
         })
 }
 
-
 exports.getProduct = (req, res, next ) => {   
     const ID = mongoose.Types.ObjectId(req.params.prodId);
     Product
@@ -47,8 +46,6 @@ exports.getProduct = (req, res, next ) => {
             console.log(err)
         })
 }
-
-
 
 exports.addProduct = (req, res, next) => {
 
@@ -139,23 +136,15 @@ exports.addProduct = (req, res, next) => {
 
 }
 
-
 exports.updateProduct = (req, res, next) => {
-    
-
     let product;
     let supplierId = req.body.supplierId
 
-
     const ID = mongoose.Types.ObjectId(req.body.productBeingEditedID);
-
     let imageUrlsString = req.body.imageUrls;
     let featuresString = req.body.features;
-
-    
     let imageUrlsArray = imageUrlsString.split(',');
     let featuresArray = featuresString.split(',');
-
     let mainImgUrl = imageUrlsArray[0];
 
     Product.findById(ID)
@@ -239,6 +228,38 @@ exports.updateProduct = (req, res, next) => {
         
 
         
+
+}
+
+exports.updateProductsVisibility = (req, res, next) => {
+    let removeFromPubIds = req.body.removeFromPub.split(',');
+
+    Product
+        .find({
+            '_id': { $in: removeFromPubIds}
+        })
+        .then( products => {
+            if(!products){
+                const error = new Error('No products found')
+                error.statusCode = 404;
+                throw error
+            }
+
+            products.forEach(product => {
+                if(product.general.publicity){
+                    product.general.publicity = false
+                }
+                return product.save()
+            })
+        })
+        .then( () => {
+            res.status(200).json({
+                message: 'Products updated',
+            })
+        })
+        .catch(err => {
+            console.log(err)
+        })
 
 }
 

@@ -38,8 +38,8 @@ const productSchema = new Schema({
         serialNumber: String,
         generalState: String,
         mainImgUrl: String,
-        publicity: String,
-        homePage: String,
+        publicity: Boolean,
+        homePage: Boolean,
         viewCounter: Number
     
     },

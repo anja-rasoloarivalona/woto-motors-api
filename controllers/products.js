@@ -22,11 +22,11 @@ exports.initAppDatas = (req, res, next) => {
 
         products.forEach(product => {
 
-            if(product.general.publicity === 'oui'){
+            if(product.general.publicity){
                 publicityProducts.push(product)
             }
 
-            if(product.general.homePage === 'oui'){
+            if(product.general.homePage){
                 homeInventoryProducts.push(product)
             }
 
@@ -445,8 +445,8 @@ exports.getProductPublicity = (req, res, next) => {
     let homeProducts = [];
 
     let query = [
-        { 'general.publicity': 'oui'},
-        { 'general.homePage': 'oui'},
+        { 'general.publicity': true},
+        { 'general.homePage': true},
     ]
 
     Product
@@ -459,10 +459,10 @@ exports.getProductPublicity = (req, res, next) => {
         }
 
         products.forEach(product => {
-            if(product.general.publicity === 'oui'){
+            if(product.general.publicity){
                 publicityProducts.push(product)
             }
-            if(product.general.homePage === 'oui'){
+            if(product.general.homePage){
                 homeProducts.push(product)
             }
         })

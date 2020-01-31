@@ -25,7 +25,7 @@ router.post('/login', adminController.adminLogin);
 
 
 router.put('/edit-product', adminController.updateProduct);
-
+router.put('/update-product-visibility', adminController.updateProductsVisibility)
 
 router.put('/signup', 
 
