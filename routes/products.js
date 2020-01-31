@@ -4,10 +4,9 @@ const router = express.Router();
 
 router.get('/client', productsController.getProductsAsClient);
 router.get('/admin', productsController.getProductsAsAdmin);
-
-
 router.get('/init', productsController.initAppDatas);
-router.get('/publicity', productsController.getProductPublicity)
+
+//router.get('/publicity', productsController.getProductPublicity)
 
 router.get('/:prodId', productsController.getProduct);
 

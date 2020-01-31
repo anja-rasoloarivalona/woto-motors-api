@@ -10,23 +10,21 @@ const Admin = require('../models/admin');
 
 
 router.get('/products', adminController.getProducts);
-
 router.get('/users', adminController.getUsers);
 router.get('/connected-users', adminController.getConnectedUsers);
 
-router.get('/user/:userId', adminController.getUser)
+router.get('/publicity', adminController.getProductsPublicity);
 
+
+router.get('/user/:userId', adminController.getUser)
 router.get('/:prodId', adminController.getProduct)
 
+router.post('/publicity/add-new', adminController.getProductsToBeAddedToPublicity)
 router.post('/add-product', adminController.addProduct);
-
 router.post('/login', adminController.adminLogin);
-
-
 
 router.put('/edit-product', adminController.updateProduct);
 router.put('/update-product-visibility', adminController.updateProductsVisibility)
-
 router.put('/signup', 
 
 [

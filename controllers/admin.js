@@ -224,19 +224,37 @@ exports.updateProduct = (req, res, next) => {
         .catch(err => {
             console.log(err)
         })
-
-        
-
-        
-
 }
 
 exports.updateProductsVisibility = (req, res, next) => {
-    let removeFromPubIds = req.body.removeFromPub.split(',');
+
+    let removeFromPubIds, removeFromHomePageIds, addToPubIds, addToHomePageIds;
+    let ids = []; 
+
+    if(req.body.removeFromPub){
+        removeFromPubIds = req.body.removeFromPub.split(',');
+        ids = [...ids, ...removeFromPubIds];
+    }
+
+    if(req.body.removeFromHomePage){
+        removeFromHomePageIds = req.body.removeFromHomePage.split(',');
+        ids = [...ids, ...removeFromHomePageIds]
+    }
+
+    if(req.body.addToPub){
+        addToPubIds = req.body.addToPub.split(',');
+        ids = [...ids, ...addToPubIds]
+    }
+
+    if(req.body.addToHomePage){
+        addToHomePageIds = req.body.addToHomePage.split(',');
+        ids = [...ids, ...addToHomePageIds]
+    }
+
 
     Product
         .find({
-            '_id': { $in: removeFromPubIds}
+            '_id': { $in: ids}
         })
         .then( products => {
             if(!products){
@@ -246,9 +264,24 @@ exports.updateProductsVisibility = (req, res, next) => {
             }
 
             products.forEach(product => {
-                if(product.general.publicity){
+                
+                if(removeFromPubIds && removeFromPubIds.includes(product._id.toString())){
                     product.general.publicity = false
                 }
+
+                if(removeFromHomePageIds && removeFromHomePageIds.includes(product._id.toString())){
+                    product.general.homePage = false
+                }
+
+                if(addToPubIds && addToPubIds.includes(product._id.toString())){
+                    product.general.publicity = true
+                }   
+
+                if(addToHomePageIds && addToHomePageIds.includes(product._id.toString())){
+                    product.general.homePage = true
+                }  
+
+
                 return product.save()
             })
         })
@@ -263,7 +296,73 @@ exports.updateProductsVisibility = (req, res, next) => {
 
 }
 
+exports.getProductsPublicity = (req, res, next) => {
 
+    let publicityProducts = [];
+    let homeProducts = [];
+
+    let query = [
+        { 'general.publicity': true},
+        { 'general.homePage': true},
+    ]
+
+    Product
+    .find({ $or: query})
+    .then(products => {
+        if(!products){
+            const error = new Error('No Products Found')
+            error.statusCode = 404
+            throw error 
+        }
+        products.forEach(product => {
+            if(product.general.publicity){
+                publicityProducts.push(product)
+            }
+            if(product.general.homePage){
+                homeProducts.push(product)
+            }
+        })
+        res
+        .status(200)
+        .json({ message: 'Products pub fetched', 
+                publicity: publicityProducts,
+                home: homeProducts
+        })
+    })
+    .catch(err => {
+        console.log(err)
+    })
+}
+
+exports.getProductsToBeAddedToPublicity = (req, res, next) => {
+    let requestedSection = req.body.section;
+    let query;
+    if(requestedSection === 'publicity'){
+        query = { 'general.publicity': false}
+    }
+
+    if(requestedSection === 'home page'){
+        query = {'general.homePage': false}
+    }
+
+    Product
+        .find(query)
+        .then(products => {
+            if(!products){
+                const error = new Error('No Products Found')
+                error.statusCode = 404
+                throw error 
+            }
+            res
+            .status(200)
+            .json({ message: 'Products fetched', 
+                    products: products,
+            })
+        })
+        .catch(err => {
+            console.log(err)
+        })
+}
 
 
 exports.adminSignup = (req, res, next) => {
