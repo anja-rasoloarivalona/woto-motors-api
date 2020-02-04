@@ -10,7 +10,6 @@ const Admin = require('../models/admin');
 
 
 router.get('/products', adminController.getProducts);
-router.get('/users', adminController.getUsers);
 router.get('/connected-users', adminController.getConnectedUsers);
 
 router.get('/publicity', adminController.getProductsPublicity);
@@ -18,6 +17,8 @@ router.get('/publicity', adminController.getProductsPublicity);
 
 router.get('/user/:userId', adminController.getUser)
 router.get('/:prodId', adminController.getProduct)
+
+router.post('/users', adminController.getUsers);
 
 router.post('/publicity/add-new', adminController.getProductsToBeAddedToPublicity)
 router.post('/add-product', adminController.addProduct);

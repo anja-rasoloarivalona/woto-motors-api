@@ -460,8 +460,26 @@ exports.adminLogin = (req, res, next) => {
 }
 
 exports.getUsers = (req, res, next ) => {
+
+    let statusQueries;
+
+    let statusValue = req.body.status;
+
+    console.log('status', statusValue)
+
+    if(statusValue === 'undefined' || statusValue === undefined ){
+        statusQueries = { "active" : {$ne: null}}
+    } else {
+
+        if(statusValue === 'active'){
+            statusQueries = {"active": true}
+        }
+        if(statusValue === 'away'){
+            statusQueries = {"active": false}
+        }        
+    }
     User
-    .find()
+    .find(statusQueries)
     .select('email firstName lastName _id active')
     .slice('connection', -1)
     .then(users => {
