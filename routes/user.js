@@ -5,10 +5,14 @@ const userController = require('../controllers/user')
 
 router.get('/favorites/:userId', userController.getFavoriteProducts)
 
+
+router.post('/add-note/:userId', userController.addNote)
+
+
 router.post('/add-favorite/:userId', userController.addFavorite)
 
 router.post('/remove-favorite/:userId', userController.removeFavorite)
 
-router.post('/edit/:userId', userController.editUserInfos)
+router.put('/edit-note/:userId', userController.editNote)
 
 module.exports = router;

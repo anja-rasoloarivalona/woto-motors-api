@@ -80,8 +80,64 @@ exports.getFavoriteProducts = (req, res, next) => {
 
 }
 
-exports.editUserInfos = (req, res, next) => {
-    
+exports.addNote = (req, res, next) => {
+    let userId = req.params.userId;
+    User
+      .findById(userId)
+      .then(user => {
+        if(!user){
+            const error = new Error('No user found');
+            error.statusCode = 404
+            throw error
+        }
+        let newNote = {
+            timeStamp : req.body.timeStamp,
+            title : req.body.title,
+            text: req.body.text,
+            creator: req.body.creator
+        }
+        user.notes = [...user.notes, newNote]
+        return user.save()
+      })
+      .then(result => {
+        res.status(200).json({
+            newNoteList: result.notes,
+            message: 'Added user note'
+        })
+      })
+      .catch(err => {
+          console.log(err)
+      })
+
+}
+
+exports.editNote = (req, res, next) => {
+    let userId = req.params.userId;
+    User
+      .findById(userId)
+      .then(user => {
+        if(!user){
+            const error = new Error('No user found');
+            error.statusCode = 404
+            throw error
+        }
+        user.notes.forEach(note => {
+            if(note._id.toString() === req.body.noteId){
+                note.title = req.body.title,
+                note.text = req.body.text
+            }
+        })
+        return user.save()
+      })
+      .then(result => {
+        res.status(200).json({
+            newNoteList: result.notes,
+            message: 'Added user note'
+        })
+      })
+      .catch(err => {
+          console.log(err)
+      })
 }
 
 
