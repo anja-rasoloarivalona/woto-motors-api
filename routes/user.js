@@ -6,6 +6,7 @@ const userController = require('../controllers/user')
 router.get('/favorites/:userId', userController.getFavoriteProducts)
 
 
+router.post('/search-user', userController.searchUser)
 router.post('/add-note/:userId', userController.addNote)
 
 

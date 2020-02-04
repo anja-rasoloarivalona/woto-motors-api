@@ -140,6 +140,32 @@ exports.editNote = (req, res, next) => {
       })
 }
 
+exports.searchUser = (req, res, next ) => {
+
+    let search = req.body.search
+    User
+        .find({
+            $or: [ {"firstName" : { "$regex": search, "$options": "i"}},
+                    {"lastName" : { "$regex": search, "$options": "i"}} ]
+        })
+        .select('firstName lastName')
+        .then(users => {
+            if(!users){
+                const error = new Error('No users found')
+                error.statusCode = 404
+                throw error
+            }
+            res
+            .status(200)
+            .json({ message: 'Users found', 
+                    users: users,
+                })
+        })
+        .catch(err => {
+            console.log9err
+        })
+}
+
 
 const toggleFollowerToProduct = (productId, userId, action) => {
     Product

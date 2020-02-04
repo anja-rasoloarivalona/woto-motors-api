@@ -12,16 +12,8 @@ const io = require('../socket');
 exports.signup = (req, res, next) => {
 
     const errors = validationResult(req);
-
-    console.log(req.body)
-
-
+    
     if(!errors.isEmpty()){
-
-        console.log('error', errors)
-
-
-
         const error = new Error('Validation failed');
         error.statusCode = 422;
         error.data = errors.array();
@@ -67,18 +59,10 @@ exports.signup = (req, res, next) => {
 
 
 exports.login = (req, res, next ) => {
-
-  
-
-
     const email = req.body.email;
     const password = req.body.password;
     const timeStamp = req.body.timeStamp;
-
-
     let userAskingLogin;
-
-
     User.findOne({ email: email})
         .then( user => {
             if(!user){
