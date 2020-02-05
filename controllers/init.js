@@ -31,11 +31,14 @@ exports.initAdminApp = (req, res, next) => {
                 let brand = product.general.brand
                 let model  = product.general.model
                 let price = product.general.price
+                let year = parseInt(product.general.year) 
     
                 let modelsData = {
                     [model]: {
-                        min: price,
-                        max: price
+                        minPrice: price,
+                        maxPrice: price,
+                        minYear: year,
+                        maxYear: year
                     }
                 }
                 if(!Object.keys(brandsAndModels).includes(brand)){
@@ -46,6 +49,10 @@ exports.initAdminApp = (req, res, next) => {
                             price: {
                                 min: price,
                                 max: price
+                            },
+                            year: {
+                                min: year,
+                                max: year
                             },
                             datas: {
                                 ...modelsData
@@ -58,15 +65,22 @@ exports.initAdminApp = (req, res, next) => {
                 
                     if(brandsAndModels[brand].datas[model] !== undefined){
                          //1st case : the brand array already contains the model of the current product
-                        let modelPrice = brandsAndModels[brand].datas[model];
+                        let modelData = brandsAndModels[brand].datas[model];
     
-                        if(modelPrice.min > price){
-                        
-                            brandsAndModels[brand].datas[model].min = price
+                        if(modelData.minPrice > price){
+                            brandsAndModels[brand].datas[model].minPrice = price
                         }
     
-                        if(modelPrice.max < price){
-                            brandsAndModels[brand].datas[model].max = price
+                        if(modelData. maxPrice < price){
+                            brandsAndModels[brand].datas[model].maxPrice = price
+                        }
+
+                        if(modelData.minYear > year){
+                            brandsAndModels[brand].datas[model].minYear = year
+                        }
+
+                        if(modelData. maxYear < year){
+                            brandsAndModels[brand].datas[model].maxYear = year
                         }
        
                     } else {
@@ -90,6 +104,14 @@ exports.initAdminApp = (req, res, next) => {
     
                 if(brandsAndModels[brand].price.max < price){
                     brandsAndModels[brand].price.max = price
+                }
+
+                if(brandsAndModels[brand].year.min > year){
+                    brandsAndModels[brand].year.min = year
+                }
+
+                if(brandsAndModels[brand].year.max < year){
+                    brandsAndModels[brand].year.max = year
                 }
             })      
 

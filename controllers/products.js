@@ -288,16 +288,16 @@ exports.getProductsAsAdmin = (req, res, next ) => {
 
     const { sortBy } = req.query;
     let sort;
-    if(sortBy === 'undefined' ||sortBy === 'prix_croissant' ){
+    if(sortBy === 'undefined' ||sortBy === 'increasing_price' ){
         sort = {"general.price": 1};
     }
-    if(sortBy === 'prix_décroissant'){
+    if(sortBy === 'decreasing_price'){
         sort = {"general.price": -1};
     }
-    if(sortBy === 'popularité'){
+    if(sortBy === 'latest'){
         sort = {"general.viewCounter": -1};
     }
-    if(sortBy === 'date'){
+    if(sortBy === 'most_popular'){
         sort = {createdAt: -1};
     }
 
