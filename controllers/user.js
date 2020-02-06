@@ -140,6 +140,22 @@ exports.editNote = (req, res, next) => {
       })
 }
 
+exports.deleteNote = (req, res, next) => {
+    let userId = req.body.userId;
+    let noteId = req.params.noteId;
+    User
+        .updateOne( {_id: userId } , {$pull: { notes: {_id: noteId} }})
+        .then(result => {
+            res.status(200).json({ 
+                message: 'Note deleted',
+            })
+        })
+        .catch(err => {
+            console.log(err)
+        })
+
+}
+
 exports.searchUser = (req, res, next ) => {
 
     let search = req.body.search
@@ -164,6 +180,30 @@ exports.searchUser = (req, res, next ) => {
         .catch(err => {
             console.log9err
         })
+}
+
+exports.editPhone = (req, res, next) => {
+    let userId = req.params.userId;
+    User
+      .findById(userId)
+      .then(user => {
+        if(!user){
+            const error = new Error('No user found');
+            error.statusCode = 404
+            throw error
+        }
+        user.phoneNumber = req.body.phoneNumber
+        return user.save()
+      })
+      .then(result => {
+        res.status(200).json({
+            userPhone: result.phoneNumber,
+            message: 'User phone updated'
+        })
+      })
+      .catch(err => {
+          console.log(err)
+      })
 }
 
 

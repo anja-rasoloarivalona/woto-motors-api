@@ -15,5 +15,8 @@ router.post('/add-favorite/:userId', userController.addFavorite)
 router.post('/remove-favorite/:userId', userController.removeFavorite)
 
 router.put('/edit-note/:userId', userController.editNote)
+router.put('/edit-phone/:userId', userController.editPhone)
+
+router.delete('/delete-note/:noteId', userController.deleteNote)
 
 module.exports = router;

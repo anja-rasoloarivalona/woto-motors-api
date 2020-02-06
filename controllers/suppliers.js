@@ -69,9 +69,6 @@ exports.getSuppliers = (req, res, next) => {
 }
 
 exports.editSupplier = (req, res, next) => {
-
-    console.log('editing....');
-
     let name = req.body.name,
         email = req.body.email,
         phoneNumber = req.body.phoneNumber,
