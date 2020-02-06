@@ -6,12 +6,8 @@ const mongoose = require('mongoose');
 const io = require('../socket');
 
 
-
-
-
-
 //FIND ALL MESSAGES FOR ADMIN AND RETRIEVE THE LAST USER MESSAGE ONLY
-'firstName lastName messages _id'
+
 exports.getMessages = (req, res, next) => {
     User.find()
         .select('firstName lastName _id')
