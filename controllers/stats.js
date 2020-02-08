@@ -69,12 +69,11 @@ exports.addANotification = (req, res, next) => {
 }
 
 exports.getProductsStats = (req, res, next) => {
-
     let statsData = {};
-
+    let mostViewedProducts;
     Product
         .find()
-        .select('general.viewCounter general.brand general.model')
+        //.select('general.viewCounter general.brand general.model')
         .sort({ 'general.viewCounter': -1})
         .then(products => {
             if(!products){
@@ -82,6 +81,9 @@ exports.getProductsStats = (req, res, next) => {
                 error.statusCode = 404
                 throw error
             }
+
+            mostViewedProducts = products.slice(0, 4);
+
             products.forEach( product => {
                 if(!Object.keys(statsData).includes(product.general.brand)){
                     //The current brand is not part of the data set yet
@@ -128,7 +130,9 @@ exports.getProductsStats = (req, res, next) => {
             })
             res
             .status(200)
-            .json({ message: 'Fetched products stats', stats: statsData})
+            .json({ message: 'Fetched products stats', 
+                    stats: statsData,
+                    mostViewedProducts: mostViewedProducts})
         })
         .catch(err => {
             console.log(err)
