@@ -219,9 +219,11 @@ const toggleFollowerToProduct = (productId, userId, action) => {
 
         if(action === 'add'){
             product.followers = [...product.followers, userId]
+            product.followersCounter = product.followersCounter + 1 
         }
         if(action === 'remove'){
             product.followers = product.followers.filter(follower => follower.toString() !== userId.toString())
+            product.followersCounter = product.followersCounter - 1
         }
         
         return product.save()

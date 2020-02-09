@@ -82,7 +82,8 @@ const productSchema = new Schema({
 
     followers: [{
         type: String
-    }]
+    }],
+    followersCounter: Number
 
    
 }, {timestamps: true})

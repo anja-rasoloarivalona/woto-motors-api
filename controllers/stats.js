@@ -71,9 +71,9 @@ exports.addANotification = (req, res, next) => {
 exports.getProductsStats = (req, res, next) => {
     let statsData = {};
     let mostViewedProducts;
+    let mostFollowedProducts;
     Product
         .find()
-        //.select('general.viewCounter general.brand general.model')
         .sort({ 'general.viewCounter': -1})
         .then(products => {
             if(!products){
@@ -81,9 +81,7 @@ exports.getProductsStats = (req, res, next) => {
                 error.statusCode = 404
                 throw error
             }
-
             mostViewedProducts = products.slice(0, 4);
-
             products.forEach( product => {
                 if(!Object.keys(statsData).includes(product.general.brand)){
                     //The current brand is not part of the data set yet
@@ -92,8 +90,13 @@ exports.getProductsStats = (req, res, next) => {
                         [product.general.brand] : {
                             views: product.general.viewCounter ? product.general.viewCounter : 0,
                             models: {
-                                [product.general.model] : product.general.viewCounter ? product.general.viewCounter : 0
-                            }
+                                [product.general.model] : {
+                                    viewCounter: product.general.viewCounter ? product.general.viewCounter : 0,
+                                    favoritesCounter: product.followers.length
+                                }
+
+                            },
+                            followers: product.followers.length
                         }
                     }
                 } else {
@@ -108,8 +111,13 @@ exports.getProductsStats = (req, res, next) => {
                                     views: statsData[product.general.brand].views + viewCounter,
                                     models: {
                                         ...statsData[product.general.brand].models,
-                                        [product.general.model] : viewCounter
-                                    }
+                                        [product.general.model] : {
+                                            viewCounter:  viewCounter,
+                                            favoritesCounter: product.followers.length
+                                        }
+                                            
+                                    },
+                                    followers:  statsData[product.general.brand].followers + product.followers.length
                                 }
                             }
                         } else {
@@ -121,18 +129,36 @@ exports.getProductsStats = (req, res, next) => {
                                     views: statsData[product.general.brand].views + viewCounter,
                                     models: {
                                         ...statsData[product.general.brand].models,
-                                        [product.general.model]: statsData[product.general.brand].models[product.general.model] + viewCounter
-                                    }
+                                        [product.general.model]: {
+                                            viewCounter: statsData[product.general.brand].models[product.general.model].viewCounter + viewCounter,
+                                            favoritesCounter: statsData[product.general.brand].models[product.general.model].favoritesCounter + product.followers.length
+                                        }
+                                        
+                                    },
+                                    followers:  statsData[product.general.brand].followers + product.followers.length
                                 }
                             }
                         }
                     } 
             })
+
+            return Product.find().sort({ "followersCounter": -1})
+            
+        })
+        .then( products => {
+            if(!products){
+                const error = new Error('Products not found');
+                error.statusCode = 404
+                throw error
+            }
+
+            mostFollowedProducts = products.slice(0, 4);;
             res
             .status(200)
             .json({ message: 'Fetched products stats', 
                     stats: statsData,
-                    mostViewedProducts: mostViewedProducts})
+                    mostViewedProducts: mostViewedProducts,
+                    mostFollowedProducts: mostFollowedProducts})
         })
         .catch(err => {
             console.log(err)
