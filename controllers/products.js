@@ -114,101 +114,87 @@ exports.initAppDatas = (req, res, next) => {
 }
 
 exports.getProductsAsClient = (req, res, next ) => {
-    let brandQueries = [],
-        priceQueries,
-        yearQueries,
-        supplierQuery
+    let minPriceQueries,
+        maxPriceQueries, 
+        minYearQueries,
+        maxYearQueries,
+        brandQueries,
+        modelQueries
 
-    if(req.query.price === 'undefined' || req.query.price === undefined){
-        priceQueries = {"general.price" : { $ne: null}}
-    } else {
-        let minPrice = req.query.price.split(':')[0]
-        let maxPrice = req.query.price.split(':')[1];
-        priceQueries={ "general.price" : { $gte: minPrice, $lte: maxPrice} }
-    }
-
-
-    if(req.query.year === 'undefined' || req.query.year === undefined){
-        yearQueries = {"general.year" : { $ne: null}}
-    } else {
-        let minYear = req.query.year.split(':')[0]
-        let maxYear = req.query.year.split(':')[1];
-        yearQueries ={ "general.year" : { $gte: minYear, $lte: maxYear} }
-    }
-
-    const { supplier } = req.query;   
-    if(supplier === 'undefined' || supplier === undefined || supplier === 'null' || supplier === 'all'){
-        supplierQuery = {'supplier.info' : {$ne: null}}
-    } else {
-        supplierQuery = {'supplier.info' : supplier}
-    }
+        // ---- PRICE
+        if(req.query.minPrice === 'undefined' || req.query.minPrice === undefined){
+            minPriceQueries = {"general.price" : { $ne: null}}
+        } else {
+            minPriceQueries = { "general.price" : { $gte: req.query.minPrice} }
+        }
     
+        if(req.query.maxPrice === 'undefined' || req.query.maxPrice === undefined){
+            maxPriceQueries = {"general.price" : { $ne: null}}
+        } else {
+            maxPriceQueries = { "general.price" : { $lte: req.query.maxPrice} }
+        }
 
-    let brands
-    let datas = {};
+        // ---- YEAR
+        if(req.query.minYear === 'undefined' || req.query.minYear === undefined){
+            minYearQueries = {"general.year" : { $ne: null}}
+        } else {
+            minYearQueries = { "general.year" : { $gte: req.query.minYear} }
+        }
 
-    if(req.query.brand === 'undefined' || req.query.brand === undefined || req.query.brand === 'all'){
-        brandQueries = [{ "general.brand" : { $ne: null}}]
-    } else {
-        brands = req.query.brand.split('_');
-
-        brands.forEach( i => {
-            if(i !== ''){        
-                let brand = i.split(':')[0]
-                let brandData = i.split(':')[1].split(',')
-    
-                datas[brand] = brandData
-            }
-        })
-
-        Object.keys(datas).map( brand => {
-            datas[brand].forEach(model => {
-                let sort; 
-                if(model !== 'all'){
-                    sort = {
-                        "general.brand": brand,
-                        "general.model": model
-                    }
-                } else {
-                    sort = {
-                        "general.brand": brand,
-                    }
-                }
-                brandQueries = [...brandQueries, sort]
-            })
-            
-        })
-    }
+        if(req.query.maxYear === 'undefined' || req.query.maxYear === undefined){
+            maxYearQueries = {"general.year" : { $ne: null}}
+        } else {
+            maxYearQueries = { "general.year" : { $lte: req.query.maxYear} }
+        }
 
 
-    const { sortBy } = req.query;
-    let sort;
-    if(sortBy === 'undefined' ||sortBy === 'prix_croissant' ){
-        sort = {"general.price": 1};
-    }
-    if(sortBy === 'prix_décroissant'){
-        sort = {"general.price": -1};
-    }
-    if(sortBy === 'popularité'){
-        sort = {"general.viewCounter": -1};
-    }
-    if(sortBy === 'date'){
-        sort = {createdAt: -1};
-    }
+        // --- BRAND
+        const {brand} = req.query;
+        if(brand === 'undefined' || brand === undefined || brand === 'all'){
+            brandQueries = { "general.brand" : { $ne: null}}
+        } else {
+            brandQueries = {'general.brand': brand}
+        }
+
+        // --- MODEL
+        const {model} = req.query;
+        if(model === 'undefined' || model === undefined || model === 'all'){
+            modelQueries = { "general.model" : { $ne: null}}
+        } else {
+            modelQueries = {'general.model': model}
+        }
+
+
+        // ---- sort
+        const { sort } = req.query;
+        let sortBy;
+        if(sort === 'undefined' || sort === 'increasing_price' ){
+            sortBy = {"general.price": 1};
+        }
+        if(sort === 'decreasing_price'){
+            sortBy = {"general.price": -1};
+        }
+        if(sort === 'latest'){
+            sortBy = {"general.viewCounter": -1};
+        }
+        if(sort === 'most_popular'){
+            sortBy = {createdAt: -1};
+        }
+
+        let findQuery = {
+            $and: [
+                brandQueries,
+                modelQueries,
+                minPriceQueries,
+                maxPriceQueries,
+                minYearQueries,
+                maxYearQueries,
+            ]
+        }
 
     Product
-        .find({ 
-            $and: [
-               {$or: brandQueries},
-                priceQueries,
-                yearQueries,
-                supplierQuery
-            ]
-        })
-       .select('general _id createdAt supplier followers')
-        .sort(sort)
-        .populate('supplier.info')
-        .exec()      
+        .find(findQuery)
+        .sort(sortBy)    
         .then(products => {
             res
                 .status(200)
@@ -349,45 +335,39 @@ exports.getProductsAsAdmin = (req, res, next ) => {
 }
 
 exports.getProduct = (req, res, next) => {
-    let brandRequested = 'Toyota'
-    let modelRequested = 'Elantra'
+
+    console.log('get product',req.query);
+
+    let brandRequested = 'Toyota';
+    let modelRequested = 'Elantra';
     let priceRequested = 2000
+
+
     const {brand, model, price, userId} = req.query;
+
+    if(brand !== undefined || brand !== 'undefined'){
+        brandRequested = brand
+    }
 
     let userIdMakingRequest = userId;
     let productsResponse;
     let timestamp = timeStampGenerator();
-
-
     let requestedProduct, relatedProducts;
-
-
 
     if(userId !== 'not connected') {
         userIdMakingRequest = mongoose.Types.ObjectId(userId)
     }
 
-    if(brand !== 'null'){
-        brandRequested = brand
-    } 
-    if(model !== 'null'){
-        modelRequested = model
-    }
-    if(price !== 'null'){
-        priceRequested = price
-    } 
-
     const prodId = mongoose.Types.ObjectId(req.params.prodId);
 
     Product
-        .find({   $or: [{_id: prodId}, {'general.brand' : brandRequested}] })
+        .find({   $or: [ {_id: prodId}, {'general.brand': brandRequested} ] })
         .then(products => {       
             if(!products){
                 const error = new Error('Product not found');
                 error.statusCode = 404
                 throw error
             }
-
             productsResponse = products;            
             products.forEach(product => {
 
@@ -408,30 +388,50 @@ exports.getProduct = (req, res, next) => {
                 }
             })
         })
-        .then( () => {  
-
-   
-            
-            let favorite = false;
-
+        .then( () => { 
+          let favorite = false;
            requestedProduct = productsResponse.find(product => product._id.toString() === prodId.toString())
-           relatedProducts = productsResponse.filter(product => product._id.toString() !== prodId.toString())
-
            if(userId!== 'not connected' && requestedProduct.followers.includes(userId)){
             favorite = true
             }
-
-
-            res.status(200).json({
-                message: 'Product fetched',
-                product: requestedProduct,
-                relatedProducts: relatedProducts,
-                favorite: favorite
-            })
-
             if(userId !== 'not connected'){
                 addingViewsToUser(userIdMakingRequest, prodId, timestamp);
-            }           
+            }    
+
+           relatedProducts = productsResponse.filter(product => product._id.toString() !== prodId.toString())
+
+            if(relatedProducts < 1){
+
+                Product
+                    .find()
+                    .then(products => {
+                        let moreProducts = products.slice(0, 3);
+
+                        console.log('length', products.length)
+
+                        moreProducts.forEach(product => {
+                            relatedProducts = [...relatedProducts, product]
+                        })  
+                        res.status(200).json({
+                            message: 'Product fetched',
+                            product: requestedProduct,
+                            relatedProducts: relatedProducts,
+                            favorite: favorite
+                        })    
+                    })
+
+            } else {
+                res.status(200).json({
+                    message: 'Product fetched',
+                    product: requestedProduct,
+                    relatedProducts: relatedProducts,
+                    favorite: favorite
+                })
+            }
+
+           
+
+                  
 
         })           
         .catch(err => {
