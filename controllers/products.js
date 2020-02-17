@@ -4,100 +4,81 @@ const User = require('../models/user')
 const timeStampGenerator = require('../utilities/timeStampGenerator')
 
 exports.initAppDatas = (req, res, next) => {
-    
     let publicityProducts = [];
     let homeInventoryProducts = [];
     let mostPopularProducts = [];
-
     let brandAndModelsData = {};
-    let keys = []
+    let mostPopularSedan = [];
+    let price = {
+        min: null,
+        max: null
+    }
+
 
     Product
       .find()
       .select('general')
       .sort({'general.viewCounter': -1})
       .then(products => {
-
-        mostPopularProducts = products.slice(0, 4)
+        price = {
+            min: products[0].general.price,
+            max: products[0].general.price,
+        }
+        //Setting most popular products
+        mostPopularProducts = products.slice(0, 4);
+        
+        let sedanCounter = 0
 
         products.forEach(product => {
-
+            //Setting publicity products
             if(product.general.publicity){
                 publicityProducts.push(product)
             }
-
+            //Setting home Page products
             if(product.general.homePage){
                 homeInventoryProducts.push(product)
             }
+            //Setting most popular sedans
+            if(product.general.bodyType === 'sedan' && sedanCounter < 4){
+                mostPopularSedan.push(product)
+                sedanCounter++
+            }
+            //Set min and max price
+            if(product.general.price < price.min){
+                price = {
+                    ...price,
+                    min: product.general.price
+                }
+            }
+            if(product.general.price > price.max){
+                price = {
+                    ...price,
+                    max: product.general.price
+                }
+            }
+
+
+
+
+
 
             let brand = product.general.brand
             let model  = product.general.model
-            let price = product.general.price
 
-            let modelsData = {
-                [model]: {
-                    min: price,
-                    max: price
-                }
-            }
-     
             if(!Object.keys(brandAndModelsData).includes(brand)){
-
-                //Add a new brand array in the keys array
                 brandAndModelsData = {
                     ...brandAndModelsData,
-                    [brand]: {
-                        price: {
-                            min: price,
-                            max: price
-                        },
-                        datas: {
-                            ...modelsData
-                        }
-                    }
+                    [brand]: [model]
                 }
-                keys = Object.keys(brandAndModelsData)
 
-            } else {
-                //brand array already exist so we have 2 possiblities
-            
-                if(brandAndModelsData[brand].datas[model] !== undefined){
-                     //1st case : the brand array already contains the model of the current product
-                    let modelPrice = brandAndModelsData[brand].datas[model];
-
-                    if(modelPrice.min > price){
-                    
-                        brandAndModelsData[brand].datas[model].min = price
-                    }
-
-                    if(modelPrice.max < price){
-                        brandAndModelsData[brand].datas[model].max = price
-                    }
-
-
-                } else {
-                    //2nd case : the brand array doesn't contain the model of the current product
-                    brandAndModelsData = {
-                        ...brandAndModelsData,
-                        [brand]:{
-                            ...brandAndModelsData[brand],
-                            datas: {
-                                ...brandAndModelsData[brand].datas,
-                                ...modelsData
-                            }        
+            } else {      
+                if(!brandAndModelsData[brand].includes(model)){
+                     brandAndModelsData = {
+                         ...brandAndModelsData,
+                         [brand]: [...brandAndModelsData[brand], model]
                         }
-                    }
-                }
-            }
-
-            if(brandAndModelsData[brand].price.min > price){
-                brandAndModelsData[brand].price.min = price
-            }
-
-            if(brandAndModelsData[brand].price.max < price){
-                brandAndModelsData[brand].price.max = price
-            }
-           
+                    } 
+            } 
         })
         res
             .status(200)
@@ -105,7 +86,10 @@ exports.initAppDatas = (req, res, next) => {
                 publicityProducts: publicityProducts,
                 homeInventoryProducts: homeInventoryProducts,
                 brandAndModelsData: brandAndModelsData,
-                mostPopularProducts: mostPopularProducts})
+                mostPopularProducts: mostPopularProducts,
+                mostPopularSedan:  mostPopularSedan,
+                price: price
+               })
         })
         .catch(err => {
             console.log(err)
