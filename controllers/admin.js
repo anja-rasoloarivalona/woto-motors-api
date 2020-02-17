@@ -72,6 +72,7 @@ exports.addProduct = (req, res, next) => {
             model: req.body.model,
             year: req.body.year,
             price: req.body.price,
+            bodyType: req.body.bodyType,
             nbKilometers: req.body.nbKilometers,
             gazol: req.body.gazol,
             yearOfRelease: req.body.yearOfRelease,
@@ -160,6 +161,7 @@ exports.updateProduct = (req, res, next) => {
             product.general.model = req.body.model;
             product.general.year = req.body.year;
             product.general.price = req.body.price;
+            product.general.bodyType = req.body.bodyType
             product.general.nbKilometers = req.body.nbKilometers;
             product.general.gazol = req.body.gazol;
             product.general.yearOfRelease = req.body.yearOfRelease;

@@ -29,7 +29,9 @@ const productSchema = new Schema({
             type: Number,
             //required: true
         },
-
+        bodyType: {
+            type: String
+        },
         nbKilometers: Number,
         gazol: String,
         yearOfRelease: String,
