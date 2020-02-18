@@ -230,25 +230,28 @@ exports.updateProduct = (req, res, next) => {
 
 exports.updateProductsVisibility = (req, res, next) => {
 
+    console.log('req body', req.body);
+
+
     let removeFromPubIds, removeFromHomePageIds, addToPubIds, addToHomePageIds;
     let ids = []; 
 
-    if(req.body.removeFromPub){
+    if(req.body.removeFromPub && req.body.removeFromPub !== 'undefined' && req.body.removeFromPub !== ''){
         removeFromPubIds = req.body.removeFromPub.split(',');
         ids = [...ids, ...removeFromPubIds];
     }
 
-    if(req.body.removeFromHomePage){
+    if(req.body.removeFromHomePage && req.body.removeFromHomePage !== 'undefined' && req.body.removeFromHomePage !== ''){
         removeFromHomePageIds = req.body.removeFromHomePage.split(',');
         ids = [...ids, ...removeFromHomePageIds]
     }
 
-    if(req.body.addToPub){
+    if(req.body.addToPub  && req.body.addToPub !== 'undefined' && req.body.addToPub !== ''){
         addToPubIds = req.body.addToPub.split(',');
         ids = [...ids, ...addToPubIds]
     }
 
-    if(req.body.addToHomePage){
+    if(req.body.addToHomePage  && req.body.addToHomePage !== 'undefined' && req.body.addToHomePage !== ''){
         addToHomePageIds = req.body.addToHomePage.split(',');
         ids = [...ids, ...addToHomePageIds]
     }
@@ -256,7 +259,7 @@ exports.updateProductsVisibility = (req, res, next) => {
 
     Product
         .find({
-            '_id': { $in: ids}
+            _id: { $in: ids}
         })
         .then( products => {
             if(!products){

@@ -110,7 +110,8 @@ exports.login = (req, res, next ) => {
                 res.status(200).json({
                     token: token,
                     userId: userAskingLogin._id,
-                    connectionId: result.connection[lastPostion]._id
+                    connectionId: result.connection[lastPostion]._id,
+                    userName: `${userAskingLogin.firstName} ${userAskingLogin.lastName}`
 
                 })
         })
