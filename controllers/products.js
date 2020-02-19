@@ -9,6 +9,7 @@ exports.initAppDatas = (req, res, next) => {
     let mostPopularProducts = [];
     let brandAndModelsData = {};
     let mostPopularSedan = [];
+    let bodyTypeList = [];
     let price = {
         min: null,
         max: null
@@ -57,6 +58,11 @@ exports.initAppDatas = (req, res, next) => {
                 }
             }
 
+            //Set body type list
+            if(!bodyTypeList.includes(product.general.bodyType)){
+                bodyTypeList.push(product.general.bodyType)
+            }
+
 
 
 
@@ -64,20 +70,43 @@ exports.initAppDatas = (req, res, next) => {
 
             let brand = product.general.brand
             let model  = product.general.model
+            let bodyType = product.general.bodyType
+
 
             if(!Object.keys(brandAndModelsData).includes(brand)){
+                //The current brand is not in the data set yet
                 brandAndModelsData = {
                     ...brandAndModelsData,
-                    [brand]: [model]
+                    [brand]: {
+                        [bodyType]: [model]
+                    }
                 }
 
             } else {      
-                if(!brandAndModelsData[brand].includes(model)){
-                     brandAndModelsData = {
-                         ...brandAndModelsData,
-                         [brand]: [...brandAndModelsData[brand], model]
+                //The current brand is already in the data set
+
+                if(!Object.keys(brandAndModelsData[brand]).includes(bodyType)){
+                    //the body type is not yet in the brand data
+                        brandAndModelsData = {
+                            ...brandAndModelsData,
+                            [brand]: {
+                                ...brandAndModelsData[brand],
+                                [bodyType]: [model]
+                            }
+                        }                   
+                    } else {
+                        //the body type is alrady in the brand data
+                        if(!brandAndModelsData[brand][bodyType].includes(model)){
+                            //the model is not in the body type yet
+                            brandAndModelsData = {
+                                ...brandAndModelsData,
+                                [brand]: {
+                                    ...brandAndModelsData[brand],
+                                    [bodyType]: [...brandAndModelsData[brand][bodyType], model]
+                                }
+                            } 
                         }
-                    } 
+                    }
             } 
         })
         res
@@ -88,6 +117,7 @@ exports.initAppDatas = (req, res, next) => {
                 brandAndModelsData: brandAndModelsData,
                 mostPopularProducts: mostPopularProducts,
                 mostPopularSedan:  mostPopularSedan,
+                bodyTypeList: bodyTypeList,
                 price: price
                })
         })
@@ -103,6 +133,7 @@ exports.getProductsAsClient = (req, res, next ) => {
         minYearQueries,
         maxYearQueries,
         brandQueries,
+        bodyTypeQueries,
         modelQueries
 
         // ---- PRICE
@@ -132,6 +163,16 @@ exports.getProductsAsClient = (req, res, next ) => {
         }
 
 
+
+        // --- BODY TYPE
+        const {bodyType} = req.query;
+        if(bodyType === 'undefined' || bodyType === undefined || bodyType === 'all'){
+            bodyTypeQueries = { "general.bodyType" : { $ne: null}}
+        } else {
+            bodyTypeQueries = {'general.bodyType': bodyType}
+        }
+
+
         // --- BRAND
         const {brand} = req.query;
         if(brand === 'undefined' || brand === undefined || brand === 'all'){
@@ -140,6 +181,7 @@ exports.getProductsAsClient = (req, res, next ) => {
             brandQueries = {'general.brand': brand}
         }
 
+    
         // --- MODEL
         const {model} = req.query;
         if(model === 'undefined' || model === undefined || model === 'all'){
@@ -167,6 +209,7 @@ exports.getProductsAsClient = (req, res, next ) => {
 
         let findQuery = {
             $and: [
+                bodyTypeQueries,
                 brandQueries,
                 modelQueries,
                 minPriceQueries,
