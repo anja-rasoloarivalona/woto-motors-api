@@ -7,20 +7,21 @@ exports.initAppDatas = (req, res, next) => {
     let publicityProducts = [];
     let homeInventoryProducts = [];
     let mostPopularProducts = [];
-    let brandAndModelsData = {};
     let mostPopularSedan = [];
+
+    let brandAndModelsData = {};
     let bodyTypeList = [];
+    let totalProductsCounter;
     let price = {
         min: null,
         max: null
     }
-
-
     Product
       .find()
       .select('general')
       .sort({'general.viewCounter': -1})
       .then(products => {
+        totalProductsCounter = products.length
         price = {
             min: products[0].general.price,
             max: products[0].general.price,
@@ -62,11 +63,6 @@ exports.initAppDatas = (req, res, next) => {
             if(!bodyTypeList.includes(product.general.bodyType)){
                 bodyTypeList.push(product.general.bodyType)
             }
-
-
-
-
-
 
             let brand = product.general.brand
             let model  = product.general.model
@@ -118,7 +114,8 @@ exports.initAppDatas = (req, res, next) => {
                 mostPopularProducts: mostPopularProducts,
                 mostPopularSedan:  mostPopularSedan,
                 bodyTypeList: bodyTypeList,
-                price: price
+                price: price,
+                totalProductsCounter: totalProductsCounter
                })
         })
         .catch(err => {
@@ -162,8 +159,6 @@ exports.getProductsAsClient = (req, res, next ) => {
             maxYearQueries = { "general.year" : { $lte: req.query.maxYear} }
         }
 
-
-
         // --- BODY TYPE
         const {bodyType} = req.query;
         if(bodyType === 'undefined' || bodyType === undefined || bodyType === 'all'){
@@ -171,7 +166,6 @@ exports.getProductsAsClient = (req, res, next ) => {
         } else {
             bodyTypeQueries = {'general.bodyType': bodyType}
         }
-
 
         // --- BRAND
         const {brand} = req.query;
@@ -189,7 +183,6 @@ exports.getProductsAsClient = (req, res, next ) => {
         } else {
             modelQueries = {'general.model': model}
         }
-
 
         // ---- sort
         const { sort } = req.query;
@@ -219,9 +212,14 @@ exports.getProductsAsClient = (req, res, next ) => {
             ]
         }
 
+    const currentPage = req.query.page || 1;
+    const itemsPerPage = 20;
+
     Product
         .find(findQuery)
-        .sort(sortBy)    
+        .sort(sortBy)  
+        .skip( (currentPage - 1) * itemsPerPage)
+        .limit(itemsPerPage)  
         .then(products => {
             res
                 .status(200)
@@ -236,29 +234,37 @@ exports.getProductsAsClient = (req, res, next ) => {
 
 exports.getProductsAsAdmin = (req, res, next ) => {
     let brandQueries,
-        priceMinQueries,
-        priceMaxQueries,
+        minPriceQueries,
+        maxPriceQueries,
         minYearQueries,
         maxYearQueries,
         modelQueries,
-        supplierQuery
+        supplierQuery,
+        bodyTypeQueries
 
         const currentPage = req.query.page || 1;
-        const itemsPerPage = 8;
+        const itemsPerPage =20;
 
-
-    //price
-
-    if(req.query.priceMin === 'undefined' || req.query.priceMin === undefined){
-        priceMinQueries = {"general.price" : { $ne: null}}
+    // --- BODY TYPE
+    const {bodyType} = req.query;
+    if(bodyType === 'undefined' || bodyType === undefined || bodyType === 'all'){
+        bodyTypeQueries = { "general.bodyType" : { $ne: null}}
     } else {
-        priceMinQueries = { "general.price" : { $gte: req.query.priceMin} }
+        bodyTypeQueries = {'general.bodyType': bodyType}
     }
 
-    if(req.query.priceMax === 'undefined' || req.query.priceMax === undefined){
-        priceMaxQueries = {"general.price" : { $ne: null}}
+
+       // ---- PRICE
+       if(req.query.minPrice === 'undefined' || req.query.minPrice === undefined){
+        minPriceQueries = {"general.price" : { $ne: null}}
     } else {
-        priceMaxQueries = { "general.price" : { $lte: req.query.priceMax} }
+        minPriceQueries = { "general.price" : { $gte: req.query.minPrice} }
+    }
+
+    if(req.query.maxPrice === 'undefined' || req.query.maxPrice === undefined){
+        maxPriceQueries = {"general.price" : { $ne: null}}
+    } else {
+        maxPriceQueries = { "general.price" : { $lte: req.query.maxPrice} }
     }
 
 
@@ -278,6 +284,7 @@ exports.getProductsAsAdmin = (req, res, next ) => {
 
     const { supplierId } = req.query; 
 
+    console.log('supplierId', supplierId )
     if(supplierId === 'undefined' || supplierId === undefined || supplierId === 'null' || supplierId === 'all'){
         supplierQuery = {'supplier.info' : {$ne: null}}
     } else {
@@ -299,31 +306,33 @@ exports.getProductsAsAdmin = (req, res, next ) => {
     }
 
 
-    const { sortBy } = req.query;
-    let sort;
-    if(sortBy === 'undefined' ||sortBy === 'increasing_price' ){
-        sort = {"general.price": 1};
-    }
-    if(sortBy === 'decreasing_price'){
-        sort = {"general.price": -1};
-    }
-    if(sortBy === 'latest'){
-        sort = {"general.viewCounter": -1};
-    }
-    if(sortBy === 'most_popular'){
-        sort = {createdAt: -1};
-    }
+       // ---- sort
+       const { sort } = req.query;
+       let sortBy;
+       if(sort === 'undefined' || sort === 'increasing_price' ){
+           sortBy = {"general.price": 1};
+       }
+       if(sort === 'decreasing_price'){
+           sortBy = {"general.price": -1};
+       }
+       if(sort === 'latest'){
+           sortBy = {"general.viewCounter": -1};
+       }
+       if(sort === 'most_popular'){
+           sortBy = {createdAt: -1};
+       }
 
 
     let findQuery = {
         $and: [
             brandQueries,
             modelQueries,
-            priceMinQueries,
-            priceMaxQueries,
+            minPriceQueries,
+            maxPriceQueries,
             minYearQueries,
             maxYearQueries,
-            supplierQuery
+            supplierQuery,
+            bodyTypeQueries
         ]
     }
 
@@ -341,7 +350,7 @@ exports.getProductsAsAdmin = (req, res, next ) => {
 
             return Product.find(findQuery)
                 .select('general _id createdAt supplier followers')
-                .sort(sort)
+                .sort(sortBy)
                 .skip( (currentPage - 1) * itemsPerPage)
                 .limit(itemsPerPage)
                 .populate('supplier.info')
@@ -416,11 +425,7 @@ exports.getProduct = (req, res, next) => {
             })
         })
         .then( () => { 
-          let favorite = false;
            requestedProduct = productsResponse.find(product => product._id.toString() === prodId.toString())
-           if(userId!== 'not connected' && requestedProduct.followers.includes(userId)){
-            favorite = true
-            }
             if(userId !== 'not connected'){
                 addingViewsToUser(userIdMakingRequest, prodId, timestamp);
             }    
@@ -433,9 +438,6 @@ exports.getProduct = (req, res, next) => {
                     .find()
                     .then(products => {
                         let moreProducts = products.slice(0, 3);
-
-                        console.log('length', products.length)
-
                         moreProducts.forEach(product => {
                             relatedProducts = [...relatedProducts, product]
                         })  
@@ -443,7 +445,6 @@ exports.getProduct = (req, res, next) => {
                             message: 'Product fetched',
                             product: requestedProduct,
                             relatedProducts: relatedProducts,
-                            favorite: favorite
                         })    
                     })
 
@@ -452,7 +453,6 @@ exports.getProduct = (req, res, next) => {
                     message: 'Product fetched',
                     product: requestedProduct,
                     relatedProducts: relatedProducts,
-                    favorite: favorite
                 })
             }
 

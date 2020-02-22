@@ -3,9 +3,16 @@ const Product = require('../models/product');
 const Supplier = require('../models/supplier');
 
 exports.initAdminApp = (req, res, next) => {
+
     let suppliersData;
-    let brandsAndModels = {};
-    
+    let brandAndModelsData = {};
+    let bodyTypeList = [];
+
+    let price = {
+        min: null,
+        max: null
+    }
+
     Supplier
         .find()
         .then(suppliers => {
@@ -14,9 +21,7 @@ exports.initAdminApp = (req, res, next) => {
                 error.statusCode = 401;
                 throw error
             }
-
             suppliersData = suppliers
-
             return Product.find()
         })
         .then(products => {
@@ -26,102 +31,81 @@ exports.initAdminApp = (req, res, next) => {
                 throw error
             }
 
-            products.forEach(product => {
-    
+            price = {
+                min: products[0].general.price,
+                max: products[0].general.price,
+            }
+
+            products.forEach(product => { 
                 let brand = product.general.brand
                 let model  = product.general.model
-                let price = product.general.price
-                let year = parseInt(product.general.year) 
-    
-                let modelsData = {
-                    [model]: {
-                        minPrice: price,
-                        maxPrice: price,
-                        minYear: year,
-                        maxYear: year
+                let bodyType = product.general.bodyType     
+
+                //Set min and max price
+                if(product.general.price < price.min){
+                    price = {
+                        ...price,
+                        min: product.general.price
                     }
                 }
-                if(!Object.keys(brandsAndModels).includes(brand)){
-                    //Add a new brand array in the keys array
-                    brandsAndModels = {
-                        ...brandsAndModels,
+                if(product.general.price > price.max){
+                    price = {
+                        ...price,
+                        max: product.general.price
+                    }
+                }
+
+                //Set body type list
+                if(!bodyTypeList.includes(bodyType)){
+                    bodyTypeList.push(bodyType)
+                }
+
+                if(!Object.keys(brandAndModelsData).includes(brand)){
+                    //The current brand is not in the data set yet
+                    brandAndModelsData = {
+                        ...brandAndModelsData,
                         [brand]: {
-                            price: {
-                                min: price,
-                                max: price
-                            },
-                            year: {
-                                min: year,
-                                max: year
-                            },
-                            datas: {
-                                ...modelsData
-                            }
+                            [bodyType]: [model]
                         }
                     }
     
-                } else {
-                    //brand array already exist so we have 2 possiblities
-                
-                    if(brandsAndModels[brand].datas[model] !== undefined){
-                         //1st case : the brand array already contains the model of the current product
-                        let modelData = brandsAndModels[brand].datas[model];
-    
-                        if(modelData.minPrice > price){
-                            brandsAndModels[brand].datas[model].minPrice = price
-                        }
-    
-                        if(modelData. maxPrice < price){
-                            brandsAndModels[brand].datas[model].maxPrice = price
-                        }
-
-                        if(modelData.minYear > year){
-                            brandsAndModels[brand].datas[model].minYear = year
-                        }
-
-                        if(modelData. maxYear < year){
-                            brandsAndModels[brand].datas[model].maxYear = year
-                        }
-       
-                    } else {
-                        //2nd case : the brand array doesn't contain the model of the current product
-                        brandsAndModels = {
-                            ...brandsAndModels,
-                            [brand]:{
-                                ...brandsAndModels[brand],
-                                datas: {
-                                    ...brandsAndModels[brand].datas,
-                                    ...modelsData
-                                }        
+                } else {      
+                    //The current brand is already in the data set
+                    if(!Object.keys(brandAndModelsData[brand]).includes(bodyType)){
+                        //the body type is not yet in the brand data
+                            brandAndModelsData = {
+                                ...brandAndModelsData,
+                                [brand]: {
+                                    ...brandAndModelsData[brand],
+                                    [bodyType]: [model]
+                                }
+                            }                   
+                        } else {
+                            //the body type is alrady in the brand data
+                            if(!brandAndModelsData[brand][bodyType].includes(model)){
+                                //the model is not in the body type yet
+                                brandAndModelsData = {
+                                    ...brandAndModelsData,
+                                    [brand]: {
+                                        ...brandAndModelsData[brand],
+                                        [bodyType]: [...brandAndModelsData[brand][bodyType], model]
+                                    }
+                                } 
                             }
                         }
-                    }
-                }
-    
-                if(brandsAndModels[brand].price.min > price){
-                    brandsAndModels[brand].price.min = price
-                }
-    
-                if(brandsAndModels[brand].price.max < price){
-                    brandsAndModels[brand].price.max = price
-                }
+                } 
 
-                if(brandsAndModels[brand].year.min > year){
-                    brandsAndModels[brand].year.min = year
-                }
-
-                if(brandsAndModels[brand].year.max < year){
-                    brandsAndModels[brand].year.max = year
-                }
             })      
 
             res
                 .status(200)
                 .json({
                     message: 'Init data fetched',
+                    totalProducts: products.length,
                     suppliers: suppliersData,
-                    brandsAndModels: brandsAndModels,
-                    totalProducts: products.length
+                    brandAndModelsData: brandAndModelsData,
+                    bodyTypeList: bodyTypeList,
+                    price: price,
                 })
         })
         .catch(err => {
