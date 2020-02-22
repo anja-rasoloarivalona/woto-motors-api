@@ -371,44 +371,30 @@ exports.getProductsAsAdmin = (req, res, next ) => {
 }
 
 exports.getProduct = (req, res, next) => {
-
-    console.log('get product',req.query);
-
-    let brandRequested = 'Toyota';
-    let modelRequested = 'Elantra';
-    let priceRequested = 2000
-
-
-    const {brand, model, price, userId} = req.query;
-
-    if(brand !== undefined || brand !== 'undefined'){
-        brandRequested = brand
-    }
-
+    const {brand, model, price, userId, bodyType } = req.query;
+    let requestedBodyType;
     let userIdMakingRequest = userId;
     let productsResponse;
     let timestamp = timeStampGenerator();
     let requestedProduct, relatedProducts;
-
     if(userId !== 'not connected') {
         userIdMakingRequest = mongoose.Types.ObjectId(userId)
     }
 
     const prodId = mongoose.Types.ObjectId(req.params.prodId);
-
     Product
-        .find({   $or: [ {_id: prodId}, {'general.brand': brandRequested} ] })
+        .find({   $or: [ {_id: prodId}, {'general.bodyType': bodyType} ] })
         .then(products => {       
             if(!products){
                 const error = new Error('Product not found');
                 error.statusCode = 404
                 throw error
             }
-            productsResponse = products;            
+            productsResponse = products;    
             products.forEach(product => {
-
               if(product._id.toString() === prodId.toString()){
                   let viewCounter = product.general.viewCounter;
+                  requestedBodyType = product.general.bodyType;
                   if(viewCounter === undefined){
                      product.general.viewCounter = 1
                   } else {
@@ -419,7 +405,6 @@ exports.getProduct = (req, res, next) => {
                       userId: userIdMakingRequest,
                       timeStamp: timestamp
                   }]
-
                   return product.save()
                 }
             })
@@ -429,15 +414,20 @@ exports.getProduct = (req, res, next) => {
             if(userId !== 'not connected'){
                 addingViewsToUser(userIdMakingRequest, prodId, timestamp);
             }    
-
-           relatedProducts = productsResponse.filter(product => product._id.toString() !== prodId.toString())
-
-            if(relatedProducts < 1){
-
+           relatedProducts = productsResponse.filter(product => product._id.toString() !== prodId.toString());
+           relatedProductsCounter = relatedProducts.length;
+           let relatedProductsCounterTarget = 4;
+           let sliceCount = relatedProductsCounterTarget - relatedProductsCounter;
+            if(relatedProductsCounter < 1){
+                let findQuery = {
+                    $or: [
+                        { 'general.bodyType' : requestedBodyType},
+                    ]
+                }
                 Product
-                    .find()
+                    .find(findQuery)
                     .then(products => {
-                        let moreProducts = products.slice(0, 3);
+                        let moreProducts = products.slice(0, sliceCount);
                         moreProducts.forEach(product => {
                             relatedProducts = [...relatedProducts, product]
                         })  
@@ -447,19 +437,16 @@ exports.getProduct = (req, res, next) => {
                             relatedProducts: relatedProducts,
                         })    
                     })
-
             } else {
+                if(relatedProductsCounter > 4){
+                    relatedProducts = relatedProducts.slice(0, relatedProductsCounterTarget)
+                }
                 res.status(200).json({
                     message: 'Product fetched',
                     product: requestedProduct,
                     relatedProducts: relatedProducts,
                 })
             }
-
-           
-
-                  
-
         })           
         .catch(err => {
             console.log(err)
